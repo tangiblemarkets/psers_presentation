@@ -5,36 +5,8 @@
 // [should] be live and use a real chart ... reflect according to what data
 // we pass it".
 //
-// Unlike PORTFOLIO_HOLDINGS_DATA (a separately-curated static snapshot),
-// this slide's numbers are COMPUTED LIVE from CFG.rows (js/data.js) by
-// computeManagerConcentrationData() below, grouping the 368 fund-level
-// rows by their `manager` field. This was a deliberate choice, not a
-// default: CFG.rows already carries a `dpi_segment` field whose own
-// header comment says it "drives the manager-concentration chart's 3
-// columns", and re-aggregating CFG.rows by manager reproduces the fresh
-// Figma mockup's numbers almost exactly (8 of the top 10 NAV figures
-// match to the dollar, and the 0.25x-0.75x / Over-0.75x GP counts match
-// exactly at 25 and 62) provided one manager is excluded first:
-//
-//   MANAGER_CONCENTRATION_EXCLUDED_MANAGER — "Polaris Capital Group Co
-//   Ltd" is a single ~$9.8bn / ~28% of total portfolio NAV outlier
-//   position (2 rows, both 2020-vintage Private Equity/Buyout) that would
-//   otherwise dominate every bar, bubble, and percentage on this slide.
-//   The mockup's own totals only reconcile once this manager is left out,
-//   so the exclusion is real (matches how the mockup was built), not an
-//   assumption — and it's disclosed to the viewer in the chart's own
-//   footnote below rather than silently dropped.
-//
-// Because the numbers are live, they will drift slightly from the
-// one-time Figma mockup as CFG.rows gets updated (e.g. the computed
-// "Under 0.25x DPI" band currently has 17 managers vs. the mockup's
-// printed "16 GPs" — a normal data-snapshot difference, not a bug; the
-// nearest boundary manager, Bell Partners Inc at DPI 0.2288, sits
-// comfortably clear of the 0.25x line). That's the intended tradeoff for
-// "controlled by data": edit CFG.rows and this slide's table, chart, and
-// callouts all recompute.
-
-const MANAGER_CONCENTRATION_EXCLUDED_MANAGER = 'Polaris Capital Group Co Ltd';
+// Numbers come live from CFG.rows (Excel via tools/export.py). Every
+// included interest is kept. Do not drop a manager without asking.
 
 // Short "common name" for each manager, matching the Figma mockup's own
 // table/legend labels (e.g. "Insight Venture Management LLC" is shown as
@@ -65,7 +37,8 @@ const MANAGER_CONCENTRATION_DISPLAY_NAMES = {
   'Carlyle': 'Carlyle',
   'Cabot Properties LP': 'Cabot Properties',
   'CIFC Asset Management': 'CIFC',
-  'Apax Partners': 'Apax Partners'
+  'Apax Partners': 'Apax Partners',
+  'Polaris Capital Group Co Ltd': 'Polaris Capital'
 };
 
 function mcDisplayName(manager) {
@@ -88,9 +61,7 @@ const MANAGER_CONCENTRATION_DPI_BANDS = [
 function mcPluralize(n, noun) { return n + ' ' + noun + (n === 1 ? '' : 's'); }
 
 function computeManagerConcentrationData() {
-  const excludedRows = CFG.rows.filter(function (r) { return r.manager === MANAGER_CONCENTRATION_EXCLUDED_MANAGER; });
-  const excludedManagerNav = excludedRows.reduce(function (s, r) { return s + (r.nav || 0); }, 0);
-  const rows = CFG.rows.filter(function (r) { return r.manager !== MANAGER_CONCENTRATION_EXCLUDED_MANAGER; });
+  const rows = CFG.rows;
 
   // 1. Aggregate every fund-level row up to its manager.
   const raw = {};
@@ -181,8 +152,6 @@ function computeManagerConcentrationData() {
   });
 
   return {
-    excludedManager: MANAGER_CONCENTRATION_EXCLUDED_MANAGER,
-    excludedManagerNav: excludedManagerNav,
     totalGpCount: managers.length,
     totalNav: totalNav,
     managers: managers,

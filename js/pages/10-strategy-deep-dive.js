@@ -260,23 +260,34 @@ function sddRenderInsightBlock(n, title, body) {
     '</div></div>';
 }
 
-// Strategy dropdown lives inline in the title line itself ("Strategy
-// Deep Dive: <select>"), styled via .sddTitleSelect (css/styles.css) —
-// same clickable-heading-text treatment as Market Sentiment's
-// .msFilterSelect, just sized to match this slide's title typography
-// (46px/weight 500) instead of a subtitle's.
-function sddStrategyOptionsHtml(selected) {
-  return SDD_STRATEGIES.map(function (s) {
-    const sel = s.key === selected ? ' selected' : '';
-    return '<option value="' + s.key + '"' + sel + '>' + esc(s.label) + '</option>';
-  }).join('');
+function sddCurrentLabel() {
+  return (sddStrategyByKey(sddState.strategyKey) || SDD_STRATEGIES[0]).label;
 }
 
 function sddTitleBarHtml() {
-  return '\n  <div id="sddTitleBar" data-fig-name="title" style="position:absolute;left:68px;top:136px;width:1700px;height:58px;display:flex;align-items:baseline;gap:14px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:46px;color:#104130;white-space:nowrap;">' +
-    '<span>Strategy Deep Dive:</span>' +
-    '<select id="sddStrategySelect" class="sddTitleSelect">' + sddStrategyOptionsHtml(sddState.strategyKey) + '</select>' +
+  return '\n  <div id="sddTitleBar" data-fig-name="title" style="position:absolute;left:68px;top:136px;width:1700px;height:58px;display:flex;align-items:center;gap:16px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:46px;color:#104130;white-space:nowrap;">' +
+    '<span>Strategy Deep Dive: <span id="sddTitleStrategy">' + esc(sddCurrentLabel()) + '</span></span>' +
+    '<button type="button" id="sddSettingsBtn" class="sddSettingsBtn" title="Choose strategy" aria-label="Choose strategy">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.82-.33 1.7 1.7 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.68 15a1.7 1.7 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.68a1.7 1.7 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>' +
+    '</button>' +
     '</div>';
+}
+
+function openSddStrategyDrawer() {
+  const body = SDD_STRATEGIES.map(function (s) {
+    const on = s.key === sddState.strategyKey;
+    return '<div class="dataRow sddStratPick' + (on ? ' is-on' : '') + '" data-sdd-strategy="' + s.key + '">' +
+      '<div class="name"><b>' + esc(s.label) + '</b></div>' +
+      '<div class="val">' + (on ? 'Current' : '') + '</div>' +
+    '</div>';
+  }).join('');
+  openDrawer('Choose strategy', 'The slide updates when you pick one', '<div class="sddStratList">' + body + '</div>');
+  document.querySelectorAll('.sddStratPick').forEach(function (el) {
+    el.addEventListener('click', function () {
+      sddOnStrategyChange(el.getAttribute('data-sdd-strategy'));
+      closeDrawer();
+    });
+  });
 }
 
 function sddSubtitleHtml(N) {
@@ -404,10 +415,13 @@ function renderStrategyDeepDiveSlideAfterRender() {
   sddBindNavTips();
   bindStrategyDeepDiveSort();
   bindStrategyDeepDiveRows();
-  const sel = document.getElementById('sddStrategySelect');
-  if (sel && !sel.dataset.bound) {
-    sel.dataset.bound = '1';
-    sel.addEventListener('change', function () { sddOnStrategyChange(this.value); });
+  const btn = document.getElementById('sddSettingsBtn');
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openSddStrategyDrawer();
+    });
   }
 }
 
@@ -425,6 +439,8 @@ function sddApplySelection() {
   sddCurrent = sddComposeSlideData(sddState.strategyKey);
   const D = sddCurrent.D, N = sddCurrent.N;
 
+  const titleEl = document.getElementById('sddTitleStrategy');
+  if (titleEl) titleEl.textContent = D.strategyLabel;
   const subtitleEl = document.getElementById('sddSubtitle');
   if (subtitleEl) subtitleEl.textContent = N.subtitle;
   const pointsEl = document.getElementById('sddPoints');

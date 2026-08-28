@@ -2,8 +2,8 @@
 // Vintage". Originally a static, per-combination slide (Round 42); as of
 // Round 83 this is a fully dynamic slide, per the user's explicit
 // request ("instead of making many duplicates pages... lets modify them
-// and make all data point change in a smooth way"): two dropdowns
-// (Strategy, Vintage band) let the viewer pick any real combination, and
+// and make all data point change in a smooth way"): a settings drawer
+// (Strategy + Vintage) lets the viewer pick any real combination, and
 // EVERY number in both panels — the 4 "Pricing Drivers", the Indicative
 // Pricing range/proceeds, and all 4 "Sell vs Hold" input tiles plus the
 // chart itself — recomputes live from CFG.rows (js/data.js) filtered to
@@ -306,27 +306,70 @@ function msEnsureValidState() {
   if (best) { msState = { strategy: best.strategy, vintageSegment: best.vintageSegment }; }
 }
 
-function msStrategyOptionsHtml(selected) {
+function msSubtitleText() {
   const D = MARKET_SENTIMENT_DATA;
-  return D.strategies.map(function (s) {
-    const sel = s === selected ? ' selected' : '';
-    return '<option value="' + s + '"' + sel + '>' + (D.strategyDisplayLabels[s] || s) + '</option>';
-  }).join('');
+  const vintageMeta = D.vintageSegments.filter(function (v) { return v.key === msState.vintageSegment; })[0];
+  const strategyLabel = D.strategyDisplayLabels[msState.strategy] || msState.strategy;
+  const vintageLabel = vintageMeta ? vintageMeta.label : msState.vintageSegment;
+  return strategyLabel + ', ' + vintageLabel;
 }
 
-function msVintageOptionsHtml(strategy, selected) {
-  return msAvailableVintageSegments(strategy).map(function (v) {
-    const sel = v.key === selected ? ' selected' : '';
-    return '<option value="' + v.key + '"' + sel + '>' + v.label + '</option>';
-  }).join('');
-}
-
-function msDropdownBarHtml() {
-  return '\n  <div id="msFilterBar" style="position:absolute;left:68.00px;top:196.00px;width:1700.00px;height:44.00px;display:flex;align-items:baseline;gap:14px;">' +
-    '<select id="msStrategySelect" class="msFilterSelect" style="min-width:300px;">' + msStrategyOptionsHtml(msState.strategy) + '</select>' +
-    '<span class="msFilterSep">,</span>' +
-    '<select id="msVintageSelect" class="msFilterSelect" style="min-width:150px;">' + msVintageOptionsHtml(msState.strategy, msState.vintageSegment) + '</select>' +
+function msTitleBarHtml() {
+  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1700px;height:55px;display:flex;align-items:center;gap:16px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
+    '<span>' + esc(MARKET_SENTIMENT_DATA.title) + '</span>' +
+    '<button type="button" id="msSettingsBtn" class="sddSettingsBtn" title="Choose strategy and vintage" aria-label="Choose strategy and vintage">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.82-.33 1.7 1.7 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.68 15a1.7 1.7 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.68a1.7 1.7 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>' +
+    '</button>' +
     '</div>';
+}
+
+function msSubtitleHtml() {
+  return '\n  <div id="msSubtitle" class="fig-text" style="position:absolute;left:68px;top:196px;width:1550px;height:50px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-size:40px;line-height:50px;color:#787878;white-space:nowrap;">' + esc(msSubtitleText()) + '</div>';
+}
+
+function msPickRowHtml(label, on, kind, value) {
+  return '<div class="dataRow sddStratPick' + (on ? ' is-on' : '') + '" data-ms-kind="' + kind + '" data-ms-value="' + escAttr(value) + '">' +
+    '<div class="name"><b>' + esc(label) + '</b></div>' +
+    '<div class="val">' + (on ? 'Current' : '') + '</div>' +
+  '</div>';
+}
+
+function msSettingsBodyHtml() {
+  const D = MARKET_SENTIMENT_DATA;
+  const strat = D.strategies.map(function (s) {
+    return msPickRowHtml(D.strategyDisplayLabels[s] || s, s === msState.strategy, 'strategy', s);
+  }).join('');
+  const vints = msAvailableVintageSegments(msState.strategy).map(function (v) {
+    return msPickRowHtml(v.label, v.key === msState.vintageSegment, 'vintage', v.key);
+  }).join('');
+  return '<div class="sddStratList" id="msSettingsList">' +
+    '<div class="sectionTitle">Strategy</div>' + strat +
+    '<div class="sectionTitle msSettingsVintageHead">Vintage</div>' + vints +
+  '</div>';
+}
+
+function msBindSettingsDrawer() {
+  document.querySelectorAll('#msSettingsList .sddStratPick').forEach(function (el) {
+    el.addEventListener('click', function () {
+      const kind = el.getAttribute('data-ms-kind');
+      const value = el.getAttribute('data-ms-value');
+      if (kind === 'strategy') msOnStrategyChange(value);
+      else msOnVintageChange(value);
+      msRefreshSettingsDrawer();
+    });
+  });
+}
+
+function msRefreshSettingsDrawer() {
+  const list = document.getElementById('msSettingsList');
+  if (!list) return;
+  list.parentNode.innerHTML = msSettingsBodyHtml();
+  msBindSettingsDrawer();
+}
+
+function openMsSettingsDrawer() {
+  openDrawer('Choose view', 'The slide updates when you pick one', msSettingsBodyHtml());
+  msBindSettingsDrawer();
 }
 
 function msTagPillHtml(x, y, tagKey, id) {
@@ -411,8 +454,8 @@ function renderMarketSentimentSlide() {
   '\n  <div class="fig-text" data-fig-name="chrome-footer" style="position:absolute;left:68.00px;top:982.00px;width:112.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:left;white-space:pre;">Confidential</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:right;white-space:pre;">08</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-footer-note" style="position:absolute;left:219.00px;top:982.00px;width:954.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:18.00px;letter-spacing:0.00px;color:#787878;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;">' + D.footnote + '</div>' +
-  '\n  <div class="fig-text" data-fig-name="title" style="position:absolute;left:68.00px;top:136.00px;width:1700.00px;height:55.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-style:normal;font-size:44.00px;line-height:55.44px;letter-spacing:0.00px;color:#104130;text-align:left;white-space:pre;">' + D.title + '</div>' +
-  msDropdownBarHtml() +
+  msTitleBarHtml() +
+  msSubtitleHtml() +
   '\n  <div class="fig-box" data-fig-name="panel-divider" style="position:absolute;left:956.00px;top:296.00px;width:1.00px;height:600.00px;background:#e2e6e3;"></div>' +
   '\n  <div id="msPricingPanel">' + pricingHtml + '</div>' +
   '\n  <div id="msSellVsHoldPanel">' + sellVsHoldHtml + '</div>' +
@@ -530,17 +573,19 @@ function renderMarketSentimentSlideAfterRender() {
   marketSentimentChartInstance = new ApexCharts(mount, msChartOptionsFor(cur.sellVsHold, play));
   marketSentimentChartInstance.render();
 
-  const strategySelect = document.getElementById('msStrategySelect');
-  const vintageSelect = document.getElementById('msVintageSelect');
-  if (strategySelect) strategySelect.addEventListener('change', function () { msOnStrategyChange(this.value); });
-  if (vintageSelect) vintageSelect.addEventListener('change', function () { msOnVintageChange(this.value); });
+  const btn = document.getElementById('msSettingsBtn');
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openMsSettingsDrawer();
+    });
+  }
 }
 
 function msOnStrategyChange(newStrategy) {
   const newVintage = msPickVintage(newStrategy, msState.vintageSegment);
   msState = { strategy: newStrategy, vintageSegment: newVintage };
-  const vintageSelect = document.getElementById('msVintageSelect');
-  if (vintageSelect) vintageSelect.innerHTML = msVintageOptionsHtml(newStrategy, newVintage);
   msApplySelection();
 }
 
@@ -559,6 +604,9 @@ function msApplySelection() {
   const barX0 = 68, barWidth = 832;
   const fillLeft = barX0 + (P.rangeLow - P.barScaleMin) / (P.barScaleMax - P.barScaleMin) * barWidth;
   const fillWidth = (P.rangeHigh - P.rangeLow) / (P.barScaleMax - P.barScaleMin) * barWidth;
+
+  const subtitle = document.getElementById('msSubtitle');
+  if (subtitle) subtitle.textContent = D.subtitleText;
 
   const rangeStat = document.getElementById('msRangeStat');
   if (rangeStat) rangeStat.textContent = P.rangeDisplay;

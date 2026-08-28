@@ -16,10 +16,9 @@
 // and js/slide-data/10-strategy-deep-dive-narratives.data.js.
 //
 // IMPORTANT: this file must load AFTER js/slide-data/08-manager-
-// concentration.data.js (see index.html script order) — it reuses that
-// file's MANAGER_CONCENTRATION_EXCLUDED_MANAGER, mcDisplayName(), and
-// MANAGER_CONCENTRATION_DATA.totalNav rather than redefining them. It
-// must also load after 10-strategy-deep-dive-narratives.data.js.
+// concentration.data.js (see index.html script order) — it reuses
+// mcDisplayName() and MANAGER_CONCENTRATION_DATA.totalNav. It must
+// also load after 10-strategy-deep-dive-narratives.data.js.
 //
 // SDD_STRATEGIES — the 5 dropdown options and each one's CFG.rows
 // `tier1` filter. `tier1` is CFG.rows' finest-grained taxonomy (11
@@ -117,7 +116,7 @@ function sddAggregate(list) {
 // constant, and generalized field names (strategyNav, not peNav).
 function computeStrategyDeepDiveData(strategyConfig) {
   const rows = CFG.rows.filter(function (r) {
-    return strategyConfig.tier1Keys.indexOf(r.tier1) !== -1 && r.manager !== MANAGER_CONCENTRATION_EXCLUDED_MANAGER;
+    return strategyConfig.tier1Keys.indexOf(r.tier1) !== -1;
   });
 
   // ---- manager rollup (mirrors computeManagerConcentrationData()) ----
@@ -179,7 +178,7 @@ function computeStrategyDeepDiveData(strategyConfig) {
     return agg;
   });
 
-  const totalPortfolioNav = MANAGER_CONCENTRATION_DATA.totalNav; // same portfolio-wide, Polaris-excluded denominator as Manager Concentration
+  const totalPortfolioNav = CFG.totalNav;
 
   return {
     strategyKey: strategyConfig.key,

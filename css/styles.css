@@ -722,6 +722,8 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .mcTable tbody tr.mcClickableRow{cursor:pointer}
 .mcTable tbody tr.mcClickableRow:hover td{background:#eef5f0}
 .mcChartPanel path.apexcharts-marker{cursor:pointer}
+.mcSegClick{cursor:pointer}
+.mcSegClick:hover{opacity:.7}
 
 /* Manager Concentration leftover Apex chrome (arrow / axis tips).
    Do not hide .apexcharts-tooltip — Sell vs Hold still uses it. */
@@ -813,67 +815,14 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
   .msRangeFill,.msMarker,[data-fig-name="driver-tag"],[data-fig-name="driver-segment-label"]{transition:none}
 }
 
-/* Market Sentiment (Round 83): the Strategy/Vintage dropdowns replacing
-   the old static subtitle text. Styled as clickable heading text (same
-   size/weight/baseline the static subtitle used to have), not a boxy
-   form control, since these sit right under a slide title. */
-.msFilterSelect{
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-weight:600;
-  font-size:40px;
-  line-height:38px;
-  color:#104130;
-  background-color:transparent;
-  border:none;
-  border-bottom:2px solid transparent;
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-  cursor:pointer;
-  padding:0 30px 2px 0;
-  margin:0;
-  outline:none;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><path d='M4 7l5 5 5-5' stroke='%23104130' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat:no-repeat;
-  background-position:right 4px center;
-  transition:border-color .2s ease;
-}
-.msFilterSelect:hover,.msFilterSelect:focus{border-bottom-color:#104130}
-.msFilterSep{
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-weight:600;
-  font-size:40px;
-  line-height:38px;
-  color:#787878;
-}
+.msSettingsVintageHead{margin-top:22px}
 
-/* Strategy Deep Dive (Round 92): the Strategy dropdown replacing the
-   old fixed "Private Equity" title suffix. Same clickable-heading-text
-   treatment as Market Sentiment's .msFilterSelect above, just sized to
-   match this slide's TITLE typography (46px/weight 500) rather than a
-   subtitle's. */
-.sddTitleSelect{
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-weight:500;
-  font-size:46px;
-  line-height:1;
-  color:#104130;
-  background-color:transparent;
-  border:none;
-  border-bottom:2px solid transparent;
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-  cursor:pointer;
-  padding:0 34px 2px 0;
-  margin:0;
-  outline:none;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 18 18'><path d='M4 7l5 5 5-5' stroke='%23104130' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat:no-repeat;
-  background-position:right 4px center;
-  transition:border-color .2s ease;
-}
-.sddTitleSelect:hover,.sddTitleSelect:focus{border-bottom-color:#104130}
+.sddSettingsBtn{appearance:none;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#104130;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;z-index:8;position:relative;top:3px}
+.sddSettingsBtn svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sddSettingsBtn:hover{color:#0a2e22;opacity:.7}
+.sddStratList{margin:0}
+.sddStratPick{cursor:pointer}
+.sddStratPick.is-on .val{color:var(--accent)}
 
 .exportOverlay{position:fixed;inset:0;z-index:10050;background:rgba(13,43,31,.55);display:flex;align-items:center;justify-content:center}
 .exportOverlay[hidden]{display:none!important}

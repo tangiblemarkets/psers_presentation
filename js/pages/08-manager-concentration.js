@@ -41,9 +41,7 @@
 // "Remaining N managers" and "Total" stay pinned at the bottom.
 //
 // Both panels read MANAGER_CONCENTRATION_DATA (js/slide-data/08-manager-
-// concentration.data.js), computed live from CFG.rows — see that file's
-// header comment for the manager-level aggregation methodology and the
-// documented Polaris Capital Group exclusion.
+// concentration.data.js), computed live from every CFG.rows interest.
 //
 // Click-to-drill-down: top-10 table rows, bubbles, and the 6 numbered
 // legend items open that manager via openManager(). Remaining / Total
@@ -192,7 +190,7 @@ function bindManagerConcentrationSort() {
 }
 
 function mcSlideRows() {
-  return CFG.rows.filter(d => d.manager !== MANAGER_CONCENTRATION_EXCLUDED_MANAGER);
+  return CFG.rows.slice();
 }
 
 function mcOpenTotal() {
@@ -211,6 +209,16 @@ function mcOpenRemaining() {
   openDataLens(D.remaining.label, t('lens.includedMgrs', { n: arr.length, mgrs: D.remaining.count }), arr, { intro: t('lens.introStrategy') });
 }
 
+function mcOpenSegment(i) {
+  const seg = MANAGER_CONCENTRATION_DATA.segments[i];
+  if (!seg) return;
+  const names = {};
+  seg.points.forEach(function (m) { names[m.manager] = 1; });
+  const arr = CFG.rows.filter(function (d) { return names[d.manager]; });
+  if (!arr.length) return;
+  openDataLens(seg.label, t('lens.includedMgrs', { n: arr.length, mgrs: seg.count }), arr, { intro: t('lens.introStrategy') });
+}
+
 function bindManagerConcentrationRows() {
   const tbody = document.getElementById('mcTbody');
   if (!tbody || tbody.dataset.boundRowClick) return;
@@ -225,6 +233,17 @@ function bindManagerConcentrationRows() {
     const lens = row.getAttribute('data-mc-lens');
     if (lens === 'remaining') mcOpenRemaining();
     else if (lens === 'total') mcOpenTotal();
+  });
+}
+
+function bindManagerConcentrationSegments() {
+  document.querySelectorAll('[data-mc-segment]').forEach(function (el) {
+    if (el.dataset.bound) return;
+    el.dataset.bound = '1';
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      mcOpenSegment(Number(el.getAttribute('data-mc-segment')));
+    });
   });
 }
 
@@ -254,9 +273,9 @@ function mcRenderSegmentCaptions() {
   return D.segments.map((seg, i) => {
     const p = MC_PANEL_DEFS[i];
     return `
-  <div class="fig-text" style="position:absolute;left:${p.plotLeft}px;top:264px;width:${p.plotWidth}px;height:23px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:18px;color:#104130;text-align:center;white-space:nowrap;">${seg.count} GPs</div>
-  <div class="fig-text" style="position:absolute;left:${p.plotLeft}px;top:289px;width:${p.plotWidth}px;height:13px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:10px;color:#1a1a1a;text-align:center;white-space:nowrap;">${seg.pct.toFixed(1)}% of NAV - ${mcFormatUSD(seg.nav)}</div>
-  <div class="fig-text" style="position:absolute;left:${p.plotLeft}px;top:738px;width:${p.plotWidth}px;height:16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:13px;color:#104130;text-align:center;white-space:nowrap;">${seg.label}</div>`;
+  <div class="fig-text mcSegClick" data-mc-segment="${i}" style="position:absolute;left:${p.plotLeft}px;top:264px;width:${p.plotWidth}px;height:23px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:18px;color:#104130;text-align:center;white-space:nowrap;">${seg.count} GPs</div>
+  <div class="fig-text mcSegClick" data-mc-segment="${i}" style="position:absolute;left:${p.plotLeft}px;top:289px;width:${p.plotWidth}px;height:13px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:10px;color:#1a1a1a;text-align:center;white-space:nowrap;">${seg.pct.toFixed(1)}% of NAV - ${mcFormatUSD(seg.nav)}</div>
+  <div class="fig-text mcSegClick" data-mc-segment="${i}" style="position:absolute;left:${p.plotLeft}px;top:738px;width:${p.plotWidth}px;height:16px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:13px;color:#104130;text-align:center;white-space:nowrap;">${seg.label}</div>`;
   }).join('');
 }
 
@@ -307,7 +326,7 @@ function renderManagerConcentrationSlide() {
   const headHtml = MC_COLS.map(col =>
     `<th data-key="${col.key}" style="width:${col.width}px;text-align:${col.align};">${col.label}<span class="mc-arrow" aria-hidden="true"></span></th>`
   ).join('');
-  const footnote = `* Portfolio sizes on the vertical axis are plotted on a logarithmic scale, meaning each horizontal gridline represents a tenfold increase in NAV ($100K, $1M, $10M, etc.). One outsized position (${D.excludedManager}, ~${mcFormatUSD(D.excludedManagerNav)} NAV) is excluded from this manager-level view to keep the distribution legible.`;
+  const footnote = `* Portfolio sizes on the vertical axis are plotted on a logarithmic scale, meaning each horizontal gridline represents a tenfold increase in NAV ($100K, $1M, $10M, etc.).`;
 
   return `<div class="fig-slide" style="position:relative;width:1920px;height:1080px;background:#ffffff;overflow:hidden;">
   <div class="fig-text" data-fig-name="chrome-year" style="position:absolute;left:68.00px;top:64.00px;width:49.00px;height:24.00px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#787878;text-align:left;white-space:pre;">2026</div>
@@ -478,4 +497,5 @@ function renderManagerConcentrationSlideAfterRender() {
   bindManagerConcentrationSort();
   bindManagerConcentrationRows();
   bindManagerConcentrationLegend();
+  bindManagerConcentrationSegments();
 }

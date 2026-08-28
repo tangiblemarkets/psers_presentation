@@ -2,6 +2,58 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Routes subtitle type
+
+- Slide 03 subtitle matches Deep Dive (footer 08): 19px, regular, `#808582`.
+
+**Files:** `js/pages/05-routes-to-liquidity.js`, `README.md`.
+
+## 2026-08-28 — DPI segment GP click
+
+- Click a GP-count header (`16 GPs`, etc.), the % line, or the band label to open that DPI group in the side drawer.
+- Dots still open one manager.
+
+**Files:** `js/pages/08-manager-concentration.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Keep every Excel row
+
+- Removed the Polaris drop from Manager Concentration and Strategy Deep Dive.
+- Slide + drawer now use all `CFG.rows` (363 interests, full NAV).
+- Footnote no longer says a manager was left out.
+
+**Files:** `js/slide-data/08-manager-concentration.data.js`, `js/pages/08-manager-concentration.js`, `js/slide-data/10-strategy-deep-dive.data.js`, `README.md`.
+
+## 2026-08-28 — Market Sentiment subtitle type
+
+- Subtitle (`Private Credit, 2022+`) is `#787878`, 40px, semibold (600).
+
+**Files:** `js/pages/09-market-sentiment.js`, `README.md`.
+
+## 2026-08-28 — Market Sentiment settings picker
+
+- Removed the Strategy / Vintage dropdowns.
+- Title is two lines: green title + grey `Strategy, Vintage` subtitle.
+- Settings icon (same as Deep Dive) opens a drawer to pick both.
+- Drawer stays open so you can pick strategy and vintage.
+- Slide still updates live.
+
+**Files:** `js/pages/09-market-sentiment.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Deep Dive settings polish
+
+- Settings icon has no box/border and sits on the title line.
+- Drawer list has no line above the first strategy.
+
+**Files:** `js/pages/10-strategy-deep-dive.js`, `css/styles.css`.
+
+## 2026-08-28 — Deep Dive settings picker
+
+- Removed the Strategy dropdown from the title.
+- A settings icon opens the side drawer to pick a strategy.
+- The slide still updates live (title, table, vintage, notes).
+
+**Files:** `js/pages/10-strategy-deep-dive.js`, `css/styles.css`, `README.md`.
+
 ## 2026-08-28 — Export current / Export all
 
 - Menu has **Export current** (this page) and **Export all** (every page).

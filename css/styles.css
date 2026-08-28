@@ -1,0 +1,870 @@
+/*
+ * styles.css — PSERS Interactive Presentation
+ * ----------------------------------------------------------------------
+ * Extracted verbatim from the v6 single-file HTML's <style> block, in the
+ * exact same order. That order matters: this stylesheet grew through
+ * several rounds of visual iteration (marked by the "v3/v4/v5" comments
+ * you'll see below), and later rules intentionally override earlier ones
+ * with the same selector. Reordering or merging these blocks would change
+ * which rule wins the cascade and could visibly change the deck, so this
+ * refactor pass only added section comments — no selectors, values, or
+ * ordering were changed.
+ *
+ * Rough map of what lives where (search for these comments below):
+ *   - :root tokens + base layout (#app/.stage/.slideWrap) — the slide
+ *     canvas that holds each full-slide PNG image.
+ *   - .hotspot / .hotspots — invisible click regions drawn over the image.
+ *   - .deckbar / .sideNav — an OLDER navigation bar, later hidden by the
+ *     "v4 navigation" block further down (kept only because removing it
+ *     outright risks missing some inherited value; it has no visible
+ *     effect today).
+ *   - .drawer / .modal / .dataTable — the data drill-down UI
+ *     (side drawer, holdings table modal).
+ *   - "v3 interaction polish" — recolors the drawer to a dark theme and
+ *     tunes hover states.
+ *   - "v4 navigation" — the dot/arrow navigation bar and fullscreen button
+ *     that the deck actually uses today (hides the older .deckbar/.sideNav).
+ *   - "v5 refinement" — disables hover popovers, makes the slide surface
+ *     click-only, widens the drawer slightly.
+ *   - "v6 polish" — dimmed drawer backdrop (click it to close), a real
+ *     fade + scale open/close for the modal (it used to just snap via
+ *     display:none), bigger/clearer close ("x") buttons, custom thin
+ *     scrollbars, and the 3-dot options menu that replaces the old
+ *     always-visible Fullscreen button.
+ *   - "v7 polish" — the drawer's back button (.navBackBtn, hidden unless
+ *     there's somewhere to go back to) and hiding the 3-dot options menu
+ *     while any popup is open (body.popup-open).
+ *
+ * This is the file to open next when the plan moves from "refactor" to
+ * "restyle" — everything visual lives here.
+ *
+ * Changelog:
+ *   2026-08-26  Extracted verbatim from v6's inline <style> block.
+ *   2026-08-26  Added "v6 polish" section (see above) — drawer backdrop,
+ *               modal fade/scale transitions, bigger close buttons, custom
+ *               scrollbars, 3-dot options menu. Removed the now-unused
+ *               #fsbtn rules from the "v4 navigation" section.
+ *   2026-08-26  Added "v7 polish" section — drawer back button, options
+ *               menu auto-hide while a popup is open.
+ *   2026-08-26  Bug fix: .navBackBtn's `display:inline-flex` was
+ *               overriding the browser's native [hidden]{display:none}
+ *               (author styles beat user-agent styles regardless of
+ *               specificity), so the back button showed on every drawer
+ *               view instead of only after navigating within one. Fixed
+ *               with `.navBackBtn[hidden]{display:none}`. Also added
+ *               .vintageLensRow to the shared clickable-row cursor/hover
+ *               rules — it was clickable (see js/app.js) but had neither,
+ *               so nothing signaled it could be clicked.
+ */
+
+:root{
+  --green:#0e4b37;
+  --green2:#20775d;
+  --mint:#c8eadb;
+  --ink:#202420;
+  --muted:#777b76;
+  --line:#d8ddd9;
+  --paper:#fff;
+  --page:#f2f1ee;
+  --chrome:#0a241c;
+  --shadow:0 16px 44px rgba(0,0,0,.16);
+  /* Interactive UI (drawers, tables, buttons). Change both together. */
+  --accent:#c9b896;
+  --accent-rgb:201,184,150;
+}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--page);font-family:"Plus Jakarta Sans",Arial,Helvetica,sans-serif;color:var(--ink)}button,input,select{font-family:inherit}#app{width:100%;height:100%;display:flex;flex-direction:column;background:var(--page)}
+.stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0;background:var(--page)}
+.slideWrap{position:relative;aspect-ratio:16/9;max-width:100vw;max-height:100vh;width:min(100vw,calc(100vh*16/9));height:auto;background:#fff;overflow:hidden;box-shadow:none;outline:none}.slideImg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;user-select:none;-webkit-user-drag:none}.slideClickZone{position:absolute;inset:0;z-index:1;cursor:default}.hotspots{position:absolute;inset:0;z-index:5;pointer-events:none}.hotspot{position:absolute;pointer-events:auto;background:transparent;border:1px solid transparent;border-radius:3px;cursor:pointer;transition:background .12s ease,border-color .12s ease,box-shadow .12s ease}.hotspot:hover{border-color:rgba(32,119,93,.52);background:rgba(133,219,184,.075);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}.hotspot:hover::after{content:attr(data-label);position:absolute;left:8px;top:8px;max-width:260px;background:rgba(14,75,55,.96);color:white;padding:6px 8px;border-radius:5px;font-size:10.5px;line-height:1.25;box-shadow:0 8px 22px rgba(0,0,0,.16);z-index:7}.hotspots.visible .hotspot{border-color:transparent;background:transparent}
+.deckbar{position:fixed;left:50%;top:auto;bottom:18px;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;min-height:40px;max-width:calc(100vw - 28px);padding:5px 8px;background:rgba(252,252,251,.88);border:1px solid rgba(14,75,55,.10);border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.07);backdrop-filter:blur(14px);opacity:.18;transition:opacity .16s ease,transform .16s ease}.deckbar:hover,.deckbar:focus-within,.deckbar.pinned{opacity:1;transform:translateX(-50%) translateY(-2px)}#showLinks{display:none!important}.deckbar .brand{font-size:11px;letter-spacing:2.2px;color:var(--green);font-weight:800;margin:0 8px}.btn{appearance:none;border:1px solid #cfd8d3;background:#fff;color:var(--green);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:650;cursor:pointer;line-height:1}.btn:hover{border-color:#8eaaa0;background:#f8faf8}.btn.active{background:var(--green);color:#fff;border-color:var(--green)}.btn.icon{width:34px;height:34px;display:grid;place-items:center;padding:0;font-size:16px}.btn:disabled{opacity:.45;cursor:default}.counter{font-size:12px;color:var(--muted);min-width:55px;text-align:center}.title{font-size:12px;color:#33403a;min-width:120px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.spacer{width:1px;height:24px;background:#dbe2df;margin:0 2px}
+.sideNav{position:fixed;right:15px;top:50%;transform:translateY(-50%);z-index:25;display:flex;flex-direction:column;gap:6px;opacity:.14;transition:opacity .15s}.sideNav:hover{opacity:.55}.sideDot{width:6px;height:6px;border-radius:50%;background:#67746e;cursor:pointer}.sideDot.on{background:var(--green);transform:scale(1.45)}
+.hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,36,28,.92);color:#edf3ef;border-radius:999px;font-size:12px;padding:8px 12px;opacity:0;pointer-events:none;transition:opacity .18s;box-shadow:0 8px 24px rgba(0,0,0,.16)}
+.drawer{position:fixed;right:0;top:0;height:100%;width:min(520px,94vw);background:#fcfcfb;z-index:80;box-shadow:-18px 0 48px rgba(0,0,0,.20);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column;border-left:1px solid #e2e5e2}.drawer.open{transform:translateX(0)}.drawerHead{padding:20px 22px 14px;border-bottom:1px solid #e4e8e5;display:flex;gap:14px;align-items:flex-start}.drawerTitle{font-size:24px;line-height:1.1;color:var(--green);font-weight:750;letter-spacing:-.2px}.drawerSub{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:7px}.drawerBody{padding:18px 22px 26px;overflow:auto;min-height:0;flex:1}.xbtn{margin-left:auto;appearance:none;border:1px solid #d5ddd8;background:#fff;border-radius:50%;width:34px;height:34px;font-size:20px;line-height:1;color:#5b6761;cursor:pointer}.xbtn:hover{background:#f5f7f5}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:2px 0 16px}.kpi{border-top:2px solid var(--green);padding-top:8px}.kpi .v{font-size:22px;font-weight:800;color:var(--green)}.kpi .l{font-size:11px;color:var(--muted);margin-top:3px}.section{border-top:1px solid #e2e6e3;padding-top:12px;margin-top:14px}.sectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;font-weight:800;color:#7b837e;margin-bottom:10px}.dataRow{display:grid;grid-template-columns:1fr auto;gap:14px;padding:10px 0;border-bottom:1px solid #edf0ee;align-items:center}.dataRow .name{font-size:13px;line-height:1.25;color:#1f2924}.dataRow .val{text-align:right;font-size:13px;font-weight:750;color:var(--green);white-space:nowrap}.meta{font-size:11px;color:var(--muted);font-weight:500;margin-top:3px}.bar{height:6px;background:#e5ebe7;border-radius:999px;margin-top:5px;overflow:hidden}.bar>i{display:block;height:100%;background:#2f7a5b;border-radius:999px}.managerRow,.stratRow,.vintageLensRow{cursor:pointer}.managerRow:hover,.stratRow:hover,.vintageLensRow:hover{background:#f5faf7}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.actions .btn{border-radius:6px;padding:10px 12px}.actions .btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+.modal{position:fixed;inset:0;background:rgba(4,8,6,.62);z-index:100;display:none;align-items:center;justify-content:center;padding:22px}.modal.open{display:flex}.modalCard{width:min(1180px,96vw);height:min(760px,90vh);background:#fff;border-radius:8px;box-shadow:0 24px 70px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}.modalHead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}.modalHead h3{margin:0;color:var(--green);font-size:20px;line-height:1.1}.modalHead .sub{font-size:12px;color:var(--muted);margin-top:4px}.modalBody{flex:1;min-height:0;overflow:auto;padding:16px 18px}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}.ctrl label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px}.ctrl input,.ctrl select{border:1px solid #cbd4cf;border-radius:5px;padding:8px 9px;font-size:12px;min-width:180px;background:#fff}.tableWrap{height:calc(100% - 58px);overflow:auto;border:1px solid #e0e5e2;border-radius:5px}.dataTable{border-collapse:collapse;width:100%;font-size:11.5px}.dataTable th{position:sticky;top:0;background:#f4f7f5;color:#4e5852;text-align:left;padding:8px;border-bottom:1px solid #d7ded9;z-index:2}.dataTable td{padding:8px;border-bottom:1px solid #edf0ee;white-space:nowrap}.dataTable td:first-child,.dataTable td:nth-child(2){white-space:normal;min-width:190px}.dataTable tr:hover{background:#f3f8f5;cursor:pointer}.num{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:900px){.deckbar{top:auto;bottom:12px;opacity:.72}.title,.brand{display:none}.stage{padding:0}.drawer{width:96vw}.kpis{grid-template-columns:1fr 1fr}.sideNav{display:none}}
+
+/* v3 interaction polish: regular-deck navigation + Tailgate-inspired data lens */
+.stage{background:#f2f1ee;touch-action:manipulation}.slideWrap{box-shadow:none;background:#fff}
+/* Round 17: slide-to-slide transition — a two-layer crossfade + directional
+   slide driven from JS (see showSlide()/clearSlideGhosts() in app.js).
+   Replaces the old `.slideWrap.changing{opacity:.72}` dip, which faded the
+   ENTIRE slideWrap — including its own opaque background — for 170ms on
+   every navigation. slideWrap sits directly on `.stage`'s gray-cream
+   background with nothing else opaque behind it, so that dip let 28% of
+   that background bleed across the whole frame for an instant: a fast
+   flash, not a smooth fade, and worst on high-contrast dark slides (the
+   green cover). Root-caused by inspecting what's actually painted behind
+   `.slideWrap` in the stacking context, not guessed.
+   New approach: never lower the opacity of anything with nothing opaque
+   behind it. Right before the next slide's content is swapped in, JS
+   clones whichever element (#slideImg or #slideHtmlCanvas) is currently
+   visible into a temporary, click-through "ghost" layer stacked on top —
+   freezing the outgoing frame in place, fully opaque, while the real
+   element's content swaps underneath (invisibly, since the ghost covers
+   it). The ghost then slides+fades away in the direction of travel while
+   the freshly-swapped-in real element slides+fades in from the opposite
+   side — a true two-layer crossfade, so a fully-opaque layer covers the
+   frame at every instant of the transition. */
+.slideGhost{pointer-events:none;z-index:8}
+#slideHtmlCanvas.slideInFromRight{transform:translateX(6%);opacity:0}
+#slideHtmlCanvas.slideInFromLeft{transform:translateX(-6%);opacity:0}
+/* Pre-promote both slide surfaces to their own compositor layer up front,
+   instead of letting the browser do it lazily on the first transition.
+   Measured impact: the very first ever transition to a not-yet-shown
+   #slideImg went from a ~260ms freeze (Playwright, headless/software
+   rendering) between the transition class being applied and it actually
+   starting to move, down to ~80ms, once will-change was set at load time
+   instead of on first use. Only 2 elements ever carry this, so the
+   memory cost is negligible. */
+#slideHtmlCanvas{will-change:opacity,transform}
+#slideHtmlCanvas.slideSettling{transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .42s cubic-bezier(.16,1,.3,1);transform:translateX(0);opacity:1}
+.slideGhost.slideOutToLeft{transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .42s cubic-bezier(.16,1,.3,1);transform:translateX(-6%);opacity:0}
+.slideGhost.slideOutToRight{transition:transform .42s cubic-bezier(.16,1,.3,1),opacity .42s cubic-bezier(.16,1,.3,1);transform:translateX(6%);opacity:0}
+.deckbar{top:auto!important;bottom:16px!important;opacity:.20;min-height:38px;padding:5px 8px;background:rgba(252,252,251,.86);border-color:rgba(14,75,55,.08);box-shadow:0 10px 32px rgba(0,0,0,.08)}.deckbar:hover,.deckbar:focus-within{opacity:.96}#showLinks{display:none!important}.deckbar .brand{opacity:.65}.title{max-width:360px;color:rgba(14,75,55,.56)}#dataBtn{display:none}.hint{bottom:64px}.sideNav{opacity:.10}.sideNav:hover{opacity:.38}
+.hotspot{border:0!important;background:transparent!important;box-shadow:none!important}.hotspot::before{content:"";position:absolute;inset:0;border-radius:4px;border:1px solid transparent;transition:all .16s}.hotspot:hover::before{border-color:rgba(14,75,55,.28);background:rgba(47,122,91,.035)}.hotspot:hover::after{content:attr(data-label);position:absolute;left:10px;top:10px;max-width:270px;background:rgba(13,43,31,.96);color:white;padding:7px 9px;border-radius:3px;font-size:10.5px;line-height:1.25;box-shadow:0 12px 30px rgba(0,0,0,.24);z-index:7;letter-spacing:.01em}.hotspot.intent::after{content:"Click graph segment";position:absolute;right:8px;bottom:8px;left:auto;top:auto;background:rgba(13,43,31,.92);color:rgba(255,255,255,.86);padding:5px 7px;border-radius:2px;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.drawer{width:min(660px,43vw);background:#0d2b1f;color:#fff;border-left:1px solid rgba(255,255,255,.10);box-shadow:-28px 0 80px rgba(0,0,0,.30);transition:transform .32s cubic-bezier(.16,1,.3,1)}.drawerHead{padding:28px 32px 20px;background:#0d2b1f;border-bottom:1px solid rgba(255,255,255,.09)}.drawerTitle{font-size:clamp(18px,1.7vw,26px);font-weight:400;color:#fff;letter-spacing:-.01em}.drawerSub{color:rgba(255,255,255,.42);font-size:12px;line-height:1.55}.drawerBody{padding:24px 32px 34px;background:#0d2b1f;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}.xbtn{background:transparent;border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.52);border-radius:0;width:32px;height:32px}.xbtn:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.45);color:#fff}.kpis,.lensKpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);margin:0 0 20px}.kpi,.lensKpi{background:#0d2b1f;border-top:0;padding:16px;min-height:74px}.kpi .v,.lensKpi .v{font-size:clamp(16px,1.5vw,23px);font-weight:300;color:#fff;letter-spacing:-.01em}.kpi .l,.lensKpi .l{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:7px}.section{border-top:1px solid rgba(255,255,255,.08);margin-top:20px;padding-top:16px}.sectionTitle{font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.36);font-weight:400}.dataRow{border-bottom:1px solid rgba(255,255,255,.05);padding:10px 0}.dataRow .name{color:rgba(255,255,255,.72);font-weight:300}.dataRow .name b{color:#fff;font-weight:400}.dataRow .val{color:var(--accent);font-weight:400}.meta{color:rgba(255,255,255,.34);font-weight:300}.bar{background:rgba(255,255,255,.07);height:3px}.bar>i{background:var(--accent)}.managerRow:hover,.stratRow:hover,.vintageLensRow:hover{background:rgba(var(--accent-rgb),.045)}.actions .btn{border-radius:0;background:transparent;border-color:rgba(255,255,255,.16);color:rgba(255,255,255,.62)}.actions .btn:hover{border-color:rgba(var(--accent-rgb),.35);color:#fff;background:rgba(var(--accent-rgb),.055)}.actions .btn.primary{background:rgba(var(--accent-rgb),.08);color:var(--accent);border-color:rgba(var(--accent-rgb),.22)}
+.lensTools{position:sticky;top:-24px;z-index:4;background:#0d2b1f;padding:0 0 12px;margin-top:-2px;border-bottom:1px solid rgba(255,255,255,.075);display:flex;gap:10px;align-items:center}.lensTools input,.lensTools select{height:30px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.15);color:#fff;font-family:inherit;font-size:11px;font-weight:300;padding:0 10px;outline:none;border-radius:0}.lensTools input{flex:1;min-width:0}.lensTools input:focus,.lensTools select:focus{border-color:rgba(var(--accent-rgb),.45)}.lensTools button{height:30px;background:rgba(var(--accent-rgb),.07);border:1px solid rgba(var(--accent-rgb),.20);color:var(--accent);font-family:inherit;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:0 10px;cursor:pointer}.lensTools button:hover{background:rgba(var(--accent-rgb),.13)}.lensIntro{font-size:11px;line-height:1.65;color:rgba(255,255,255,.45);margin:-4px 0 18px}.lensGroup{border-bottom:1px solid rgba(255,255,255,.06)}.lensManager{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:center;padding:13px 0;cursor:pointer;transition:background .15s}.lensManager:hover{background:rgba(var(--accent-rgb),.04)}.lensArrow{width:16px;height:16px;border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.42);font-size:10px;transition:all .18s}.lensGroup.open .lensArrow{color:var(--accent);border-color:rgba(var(--accent-rgb),.45);background:rgba(var(--accent-rgb),.08);transform:rotate(90deg)}.lensName{font-size:12.5px;color:#fff;font-weight:400;line-height:1.28}.lensMeta{font-size:10.5px;color:rgba(255,255,255,.35);font-weight:300;margin-top:4px}.lensValue{text-align:right;color:var(--accent);font-size:12px;font-weight:400;white-space:nowrap}.lensFunds{display:none;padding:0 0 10px 34px}.lensGroup.open .lensFunds{display:block}.fundRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid rgba(255,255,255,.035);cursor:pointer}.fundRow:hover .fundName{color:var(--accent)}.fundName{font-size:11.5px;line-height:1.35;color:rgba(255,255,255,.74);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fundMeta{font-size:10px;color:rgba(255,255,255,.28);margin-top:3px}.fundVal{font-size:11px;color:rgba(255,255,255,.56);white-space:nowrap}.emptyLens{padding:28px 0;color:rgba(255,255,255,.35);font-size:12px;text-align:center}.chip{display:inline-flex;align-items:center;border:1px solid rgba(var(--accent-rgb),.20);background:rgba(var(--accent-rgb),.06);color:var(--accent);font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;margin-right:5px}.modal{background:rgba(5,18,10,.82);backdrop-filter:blur(5px)}.modalCard{background:#0d2b1f;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:0}.modalHead{background:#0d2b1f;border-bottom:1px solid rgba(255,255,255,.09)}.modalHead h3{color:#fff;font-weight:400}.modalHead .sub{color:rgba(255,255,255,.38)}.modalBody{background:#0d2b1f}.ctrl label{color:rgba(255,255,255,.34)}.ctrl input,.ctrl select{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.14);color:#fff;border-radius:0}.tableWrap{border-color:rgba(255,255,255,.08);border-radius:0}.dataTable th{background:#102f23;color:rgba(255,255,255,.42);border-color:rgba(255,255,255,.08);font-weight:400}.dataTable td{border-color:rgba(255,255,255,.045);color:rgba(255,255,255,.66)}.dataTable tr:hover{background:rgba(var(--accent-rgb),.045)}
+@media (max-width:1100px){.drawer{width:min(620px,72vw)}}@media (max-width:760px){.drawer{width:96vw}.lensKpis,.kpis{grid-template-columns:1fr 1fr}.lensTools{flex-wrap:wrap}.lensTools input{flex-basis:100%}.deckbar .title{display:none}}
+
+
+
+/* v4 navigation: Elyan-style, presentation-native controls */
+.deckbar{display:none!important}
+.sideNav{display:none!important}
+#navrow{position:fixed;bottom:0;left:0;right:0;height:57px;display:flex;align-items:center;justify-content:center;z-index:99;pointer-events:none}
+.navCluster{display:flex;align-items:center;justify-content:center;gap:12px;padding:6px 10px;border-radius:999px;background:rgba(13,43,31,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);pointer-events:all}
+#nd{display:flex;gap:7px;align-items:center}
+.nd{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);border:none;padding:0;cursor:pointer;transition:all .22s cubic-bezier(.16,1,.3,1);flex-shrink:0;opacity:1}
+.nd.on{background:rgba(255,255,255,.92);width:18px;border-radius:3px}
+.nd:hover:not(.on){background:rgba(255,255,255,.45);transform:scale(1.15)}
+.nd:focus{outline:none}
+.nd:focus-visible{box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.navbtn{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .18s,background .18s,opacity .18s,transform .12s;flex-shrink:0;padding:0}
+.navbtn svg{display:block;fill:none;stroke:rgba(255,255,255,.62);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .18s}
+.navbtn:hover{border-color:rgba(255,255,255,.75);background:rgba(255,255,255,.14);transform:translateY(-1px)}
+.navbtn:hover svg{stroke:rgba(255,255,255,.95)}
+.navbtn:disabled{opacity:.28;cursor:default;transform:none}
+.navbtn:disabled:hover{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08)}
+.navbtn:disabled:hover svg{stroke:rgba(255,255,255,.62)}
+.navbtn:focus{outline:none}
+.navbtn:focus-visible{border-color:rgba(255,255,255,.8);box-shadow:0 0 0 2px rgba(255,255,255,.22)}
+/* Fullscreen used to live in its own always-visible pill (#fsbtn) here.
+   It's now the first item in the 3-dot options menu (.optionsMenu /
+   .menuBtn / .menuList / .menuItem, defined in the "v6 polish" section
+   at the end of this file) so more options can be added later without
+   permanently cluttering the slide chrome. */
+.legacyHidden{display:none!important}
+.hint{bottom:68px!important}
+
+
+
+/* v5 refinement: no hover popovers; click opens clean data panel; slide surface is inert */
+.slideClickZone{pointer-events:none!important;cursor:default!important}
+.hotspot{cursor:pointer!important}
+.hotspot:hover::after,.hotspot.intent::after,.hotspot.intent:hover::after{content:none!important;display:none!important}
+.hotspot:hover::before{border-color:rgba(14,75,55,.22)!important;background:rgba(47,122,91,.028)!important;box-shadow:none!important}
+.hotspots.visible .hotspot::before{border-color:transparent!important;background:transparent!important}
+.hint{display:none!important}
+.drawer{width:min(620px,42vw)!important;background:#0d2b1f!important}
+.drawerHead{padding:24px 30px 18px!important}
+.drawerBody{padding:22px 30px 32px!important}
+.lensTools{top:-22px!important;padding-bottom:10px!important}
+.lensKpis{margin-bottom:18px!important}
+/* 5 KPIs leave a hole in the default 3-col grid (the grid's gap
+   background shows through). Stretch the first two across row 1, then
+   three equal cells on row 2. 4 KPIs (fund-detail modal) go on one row. */
+.lensKpis-5{grid-template-columns:repeat(6,1fr)!important}
+.lensKpis-5 .lensKpi:nth-child(-n+2){grid-column:span 3}
+.lensKpis-5 .lensKpi:nth-child(n+3){grid-column:span 2}
+.lensKpis-4{grid-template-columns:repeat(4,1fr)!important}
+.lensGroup:first-child{border-top:1px solid rgba(255,255,255,.06)}
+.lensFundsFlat .fundRow:first-child{border-top:1px solid rgba(255,255,255,.06)}
+.lensManager{padding:12px 0!important}
+.fundRow{padding:8px 0!important}
+@media (max-width:1100px){.drawer{width:min(620px,72vw)!important}}@media (max-width:760px){.drawer{width:96vw!important}}
+
+
+
+/* v6 polish: dimmed backdrop + closable overlay for the drawer, a real
+   open/close fade for the modal (it used to just snap via display:none),
+   bigger/clearer close ("x") buttons, custom scrollbars, and the 3-dot
+   options menu that replaces the old always-visible Fullscreen pill. */
+
+/* Dimmed backdrop behind the side drawer. Click it (or press Escape) to
+   close — previously the drawer had no backdrop and no click-outside
+   affordance, so the only way to close it was the small "x" in the corner. */
+.drawerOverlay{position:fixed;inset:0;background:rgba(4,12,8,.42);z-index:79;opacity:0;pointer-events:none;transition:opacity .28s ease}
+.drawerOverlay.open{opacity:1;pointer-events:auto}
+
+/* Drawer content fades in just after the panel starts sliding in, and
+   fades out immediately when closing, instead of text just appearing or
+   vanishing the instant the slide transition starts. */
+.drawerHead,.drawerBody{transition:opacity .24s ease}
+.drawer:not(.open) .drawerHead,.drawer:not(.open) .drawerBody{opacity:0;transition-delay:0s}
+.drawer.open .drawerHead,.drawer.open .drawerBody{opacity:1;transition-delay:.12s}
+
+/* The modal used to toggle via display:none/flex, which can't be animated
+   — closing just snapped shut instantly. Swapped to opacity + visibility
+   so both opening and closing fade, plus a subtle scale-in on the card. */
+.modal{display:flex;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility 0s linear .22s}
+.modal.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .22s ease,visibility 0s linear 0s}
+.modalCard{transform:scale(.96) translateY(6px);transition:transform .28s cubic-bezier(.19,1,.22,1)}
+.modal.open .modalCard{transform:scale(1) translateY(0)}
+
+/* Close ("x") buttons on the drawer and modal — bigger hit target, a
+   clearer circular shape, and a small hover/press animation so each one
+   reads as clickable at a glance.
+   Round 17: the icon is now an inline SVG (was a literal "×" character)
+   flex-centered inside the button, so it's pixel-centered regardless of
+   font metrics/baseline quirks — a text glyph centers by line-height alone,
+   which is never quite exact. Also dropped the 90° rotation on hover/press
+   (reported as annoying) in favor of a plain scale, which still reads as
+   tactile feedback without the spin. */
+.xbtn{width:36px;height:36px;border-radius:50%!important;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease}
+.xbtn svg{display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.xbtn:hover{transform:scale(1.08)}
+.xbtn:active{transform:scale(.92)}
+.drawerHead .xbtn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.24)}
+.drawerHead .xbtn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.6);color:#fff}
+.modalHead .xbtn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.24)}
+.modalHead .xbtn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.6);color:#fff}
+.modalHeadActions{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.modalHeadActions .xbtn{margin-left:0}
+.exportBtn{appearance:none;height:36px;padding:0 12px 0 10px;display:inline-flex;align-items:center;gap:6px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.28);color:var(--accent);font-family:inherit;font-size:11px;font-weight:500;letter-spacing:.08em;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+.exportBtn svg{stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.exportBtn:hover{background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.5);transform:scale(1.03)}
+.exportBtn:active{transform:scale(.96)}
+.exportBtn[hidden]{display:none!important}
+
+/* Custom scrollbars: thin, pill-shaped thumbs on an invisible track. The
+   drawer, the modal, its holdings table, and the manager-chart sidebar are
+   all the same dark theme (see the v3 block above), so they share one
+   light-on-dark treatment. Firefox uses scrollbar-width/-color; everywhere
+   else (Chrome/Safari/Edge) uses ::-webkit-scrollbar. */
+.drawerBody,.modalBody,.tableWrap{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.drawerBody::-webkit-scrollbar,.modalBody::-webkit-scrollbar,.tableWrap::-webkit-scrollbar{width:9px;height:9px}
+.drawerBody::-webkit-scrollbar-track,.modalBody::-webkit-scrollbar-track,.tableWrap::-webkit-scrollbar-track{background:transparent}
+.drawerBody::-webkit-scrollbar-thumb,.modalBody::-webkit-scrollbar-thumb,.tableWrap::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.18);border-radius:999px;border:3px solid #0d2b1f}
+.drawerBody::-webkit-scrollbar-thumb:hover,.modalBody::-webkit-scrollbar-thumb:hover,.tableWrap::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.32)}
+
+/* 3-dot options menu — replaces the old always-visible Fullscreen pill
+   (#fsbtn, removed from the "v4 navigation" section above). Fullscreen is
+   now the first item in a small dropdown so more options can be added
+   later without cluttering the slide chrome. To add an item: put a new
+   <button class="menuItem" role="menuitem"> in #menuList in index.html,
+   then wire its click handler in setupOptionsMenu() in js/app.js. */
+.optionsMenu{position:fixed;top:24px;right:24px;z-index:9999}
+.menuBtn{appearance:none;border:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);color:rgba(0,0,0,.62);cursor:pointer;padding:0;transition:background .15s ease,color .15s ease,transform .1s ease,box-shadow .15s ease;box-shadow:0 0 0 .5px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.05)}
+.menuBtn svg{fill:currentColor}
+.menuBtn:hover{background:rgba(255,255,255,.9);box-shadow:0 0 0 .5px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.08)}
+.menuBtn:active{transform:scale(.92)}
+.menuBtn[aria-expanded="true"]{background:#fff;color:var(--green)}
+.menuList{position:absolute;top:42px;right:0;min-width:184px;background:rgba(255,255,255,.94);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06);padding:6px;opacity:0;visibility:hidden;transform:scale(.9) translateY(-6px);transform-origin:top right;transition:opacity .16s ease,transform .16s cubic-bezier(.19,1,.22,1),visibility 0s linear .16s}
+.menuList.open{opacity:1;visibility:visible;transform:scale(1) translateY(0);transition:opacity .16s ease,transform .16s cubic-bezier(.19,1,.22,1),visibility 0s linear 0s}
+.menuItem{appearance:none;border:none;background:transparent;width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;color:rgba(10,20,15,.82);cursor:pointer;text-align:left;transition:background .12s ease}
+.menuItem:hover{background:rgba(14,75,55,.09)}
+.menuItem svg{flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
+#slideHtmlCanvas [data-count-to]{font-variant-numeric:tabular-nums}
+.menuBtn:focus{outline:none}
+.menuBtn:focus-visible{box-shadow:0 0 0 2px rgba(14,75,55,.22)}
+@media (max-width:760px){.menuList{min-width:168px}}
+
+
+
+/* v7 polish: a minimal drawer "back" button (only shown when there's a
+   previous view to return to), and hiding the 3-dot options menu while any
+   popup is open so it doesn't float on top of the drawer/modal. */
+
+/* Back button — sits to the left of the drawer title, same visual language
+   as the "x" close button. Uses the [hidden] attribute (toggled from
+   js/app.js's updateDrawerBack()) rather than an opacity animation: it
+   should only ever be there when there's actually somewhere to go back to,
+   so there's nothing to visually transition in/out of. */
+.navBackBtn{appearance:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:rgba(255,255,255,.62);border-radius:50%;width:30px;height:30px;flex-shrink:0;margin-top:3px;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease,transform .12s ease}
+.navBackBtn svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.navBackBtn:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5);color:#fff;transform:translateX(-2px)}
+.navBackBtn:active{transform:translateX(-3px) scale(.94)}
+.navBackBtn[hidden]{display:none}
+
+/* Options menu auto-hide — toggled on <body> the same way body.on-cover
+   already is, so it composes with that instead of fighting it. */
+.optionsMenu{transition:opacity .18s ease,transform .18s ease}
+body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(-6px)}
+
+/* Respect the OS-level "reduce motion" preference across every animation
+   added or touched in this section. */
+@media (prefers-reduced-motion: reduce){.drawer,.drawerHead,.drawerBody,.drawerOverlay,.modal,.modalCard,.menuList,.menuBtn,.xbtn,.navBackBtn,.optionsMenu,#slideHtmlCanvas,.slideGhost{transition-duration:.001ms!important;animation-duration:.001ms!important}}
+
+/* ============================================================
+   PROTOTYPE (2026-08-26): HTML slide rendering — "Strategy Mix"
+   ------------------------------------------------------------
+   Everything below styles #slideHtmlCanvas, the live-HTML stand-in
+   for a slide image (see index.html and js/app.js's HTML_SLIDES).
+   It's a fixed 1600x900 "logical canvas" that gets a single
+   `transform:scale(...)` applied by JS (syncSlideCanvasScale in
+   app.js) so it resizes exactly like the image does — uniformly,
+   never reflowing text at different widths. Only slide 6 uses this
+   so far; every other slide still renders #slideImg untouched.
+
+   NOTE on [hidden]: same trap as Round 4's back-button bug — a
+   `display` rule on an element that might also carry the `hidden`
+   attribute silently defeats it (author CSS beats the browser's
+   own [hidden]{display:none}). .slideImg already had its own
+   `display:block`, so switching it in/out via `hidden` needed the
+   same fix applied here up front, not discovered as a second bug.
+   ============================================================ */
+/* Plus Jakarta Sans, self-hosted (SIL OFL 1.1 — see assets/fonts/OFL-LICENSE.txt).
+   Confirmed as the deck's real brand font from the cover slide's own Figma style
+   metadata (fontPostScriptName: PlusJakartaSans-{Medium,MediumItalic,Bold,Regular}),
+   pulled via the Figma API rather than guessed from a PNG. Self-hosted (not a
+   Google Fonts @import) to keep the deck fully offline-portable, matching the rest
+   of this project's no-CDN-dependency approach. Only the 4 weight/style pairs the
+   cover slide actually uses are included; add more @font-face blocks here (same
+   `@fontsource/plus-jakarta-sans` package, `files/` folder) if a later slide needs
+   a weight not listed below. */
+@font-face{font-family:'Plus Jakarta Sans';src:url('../assets/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Plus Jakarta Sans';src:url('../assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Plus Jakarta Sans';src:url('../assets/fonts/plus-jakarta-sans-latin-500-italic.woff2') format('woff2');font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:'Plus Jakarta Sans';src:url('../assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+
+/* General Sans — a SECOND typeface, only needed starting with the
+   Disclaimer slide (Round 14): its legal/body copy uses General Sans
+   Medium (confirmed via that node's own style.fontFamily/
+   fontPostScriptName in the Figma JSON, not assumed), where every earlier
+   slide's text was Plus Jakarta Sans. Published by Indian Type Foundry via
+   Fontshare under Fontshare's own ITF Free Font License, which — like
+   Plus Jakarta Sans's SIL OFL — permits self-hosting the woff2 file
+   directly rather than loading it from Fontshare's CDN. Only the one
+   weight this slide's visible text actually uses (Medium/500) is needed —
+   confirmed by checking every visible character run's resolved style, not
+   assumed from the two weights (Medium, Semibold) present in the raw JSON
+   (the Semibold entries only ever land on invisible blank-line characters
+   between paragraphs). PENDING: the actual woff2 file could not be
+   downloaded from this project's sandboxed/offline environment (Fontshare
+   and other font CDNs are outside its network allowlist) — this rule
+   expects assets/fonts/general-sans-latin-500-normal.woff2, which needs to
+   be added once available; until then this falls back to the browser's
+   default sans-serif, which is why the Disclaimer slide's body copy won't
+   look pixel-exact yet. */
+@font-face{font-family:'General Sans';src:url('../assets/fonts/general-sans-latin-500-normal.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+
+.slideHtmlCanvas[hidden]{display:none}
+.slideHtmlCanvas{position:absolute;inset:0;overflow:hidden;z-index:6;background:#fff}
+/* NOTE: width/height are intentionally NOT set here anymore — each HTML slide has
+   its own native canvas size (the cover is 1920x1080, Figma's own frame size; the
+   Strategy Mix prototype is 1600x900, measured off its PNG), so js/app.js's
+   showSlide() sets them as an inline style per slide from HTML_SLIDES[n].width/
+   height, and syncSlideCanvasScale() reads that same size back via offsetWidth
+   rather than assuming one fixed resolution for every HTML slide. */
+.slideCanvasInner{
+  position:relative;transform-origin:top left;
+  background:#fff;color:#0d2b1f;
+  font-family:ui-rounded,-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* Font note: this generic stack is still the fallback for slides (like the Strategy
+   Mix prototype) whose exact px positions were measured off a PNG under `ui-rounded`
+   assumptions — switching those to Plus Jakarta Sans now would shift text metrics
+   and could break already-verified alignment, so it's left as-is here. Slides built
+   from real Figma data (like the cover) set 'Plus Jakarta Sans' directly on every
+   element instead of relying on this fallback — see renderCoverSlide() in
+   js/app.js. */
+
+.smEyebrow{position:absolute;left:56px;top:22px;font-size:13px;color:#7c8f88;letter-spacing:.02em}
+.smBrand{position:absolute;right:56px;top:16px;border:1px solid #0d2b1f;padding:7px 16px;font-size:11.5px;letter-spacing:.14em;color:#0d2b1f}
+.smTitle{position:absolute;left:56px;top:50px;font-size:46px;font-weight:600;color:#0e3b2d;margin:0;line-height:1}
+.smSubtitle{position:absolute;left:56px;top:122px;font-size:11px;letter-spacing:.08em;color:#8a978f;text-transform:uppercase}
+.smColHeads{position:absolute;left:212px;top:120px;width:412px;display:grid;grid-template-columns:1fr 92px 54px 56px;column-gap:10px;font-size:11px;letter-spacing:.05em;color:#8a978f;text-transform:uppercase}
+.smColHeads span{text-align:right}
+.smDivider{position:absolute;left:56px;top:150px;width:568px;height:1px;background:#e4e7e3}
+
+/* Row list — y/height values below are the SAME numbers Round 5 measured directly
+   off assets/images/06-strategy-mix.png (label-center midpoint partitioning) — see
+   that round's changelog entry in this file's own header and in js/app.js. Reusing
+   them here means this HTML version lines up with where the rows visually sat in
+   the original image, even though there's no coordinate-matching risk anymore
+   (a hovered/clicked row is a real element now, not a % box guessed to cover one). */
+.smRow{
+  position:absolute;left:56px;width:568px;
+  display:grid;grid-template-columns:150px 1fr 92px 54px 56px;column-gap:10px;align-items:center;
+  background:transparent;border:0;padding:0;margin:0;text-align:left;font:inherit;color:inherit;
+  cursor:pointer;border-radius:4px;transition:background .12s ease;
+}
+.smRow:hover{background:#f3f8f5}
+.smRowLabel{font-size:16px;color:#122921;font-weight:500}
+.smRowBarTrack{height:8px;border-radius:4px;background:#eef2ef;overflow:hidden}
+.smRowBarFill{display:block;height:100%;border-radius:4px}
+.smRowNav{font-size:15px;text-align:right;color:#122921;font-variant-numeric:tabular-nums}
+.smRowPct{font-size:13.5px;text-align:right;color:#8a978f;font-variant-numeric:tabular-nums}
+.smRowTvpi{font-size:15px;text-align:right;font-weight:600;color:#122921;font-variant-numeric:tabular-nums}
+
+.smTotalRow{
+  position:absolute;left:56px;top:716px;width:568px;
+  display:grid;grid-template-columns:150px 1fr 92px 54px 56px;column-gap:10px;align-items:center;
+  border-top:1px solid #d9ddd8;padding-top:14px;
+}
+.smTotalRow .smRowLabel,.smTotalRow .smRowNav,.smTotalRow .smRowTvpi{font-weight:700}
+
+.smFootnote{position:absolute;left:56px;bottom:26px;font-size:13px;color:#9aa6a0}
+.smPageNum{position:absolute;right:56px;bottom:26px;font-size:13px;color:#9aa6a0}
+
+/* Right side: qualitative commentary + vintage breakdown. Laid out with looser,
+   percentage-based positioning than the row list — this half of the slide isn't
+   where the reported bug was, and isn't the main point of this prototype pass, so
+   it's a faithful-but-not-pixel-tuned approximation for now. Worth a follow-up
+   pass if the HTML-slide direction gets a green light. */
+.smRightCol{position:absolute;left:44%;top:17%;width:53%;display:grid;grid-template-columns:1fr 1fr;column-gap:36px;row-gap:22px}
+.smQuad{border-top:3px solid;padding-top:12px}
+.smQuad h4{margin:0 0 8px;font-size:18px;font-weight:600;color:#122921}
+.smQuad .smQuadSub{font-size:12.5px;font-weight:700;color:#122921;margin:0 0 8px;line-height:1.35}
+.smQuad p{margin:0;font-size:11.5px;line-height:1.55;color:#455249}
+
+.smVintageBox{position:absolute;left:44%;top:64%;width:53%;cursor:pointer;border-radius:6px;padding:10px;margin:-10px;transition:background .12s ease}
+.smVintageBox:hover{background:#f3f8f5}
+.smVintageBox h5{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8a978f;margin:0 0 12px}
+.smVintageBar{display:flex;height:16px;border-radius:8px;overflow:hidden;margin-bottom:14px}
+.smVintageLegend{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.smVintageLegendRow{display:flex;align-items:center;gap:8px}
+.smVintageDot{width:9px;height:9px;border-radius:50%;flex:none}
+.smVintageLegendRow .label{flex:1;color:#122921}
+.smVintageLegendRow .nav{width:84px;text-align:right;color:#122921;font-variant-numeric:tabular-nums}
+.smVintageLegendRow .pct{width:56px;text-align:right;color:#8a978f;font-variant-numeric:tabular-nums}
+.smVintageCaption{font-size:11px;color:#9aa6a0;margin-top:10px}
+
+/* Generic click-hotspot overlay for figma_to_html.py-generated slides
+   (Round 11, first used on slide 4 — see renderKeyConsiderationsSlide()'s
+   header comment in js/app.js). Same subtle hover affordance as the old
+   PNG-slide .hotspot class in its current (v5) state above: a faint
+   border/background highlight, no tooltip label. */
+.fig-hotspot{cursor:pointer}
+.fig-hotspot::before{content:"";position:absolute;inset:0;border-radius:4px;border:1px solid transparent;transition:border-color .16s ease,background .16s ease}
+.fig-hotspot:hover::before{border-color:rgba(14,75,55,.22);background:rgba(47,122,91,.028)}
+.coverTocRow{cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+.coverTocRow--line{border-bottom:0.75px solid #2d5f4b}
+.coverTocRow:hover{background:rgba(245,245,240,.06)}
+.coverTocRow:focus-visible{outline:1px solid rgba(245,245,240,.35);outline-offset:-1px}
+.coverTocLabel{font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:17.88px;line-height:22.53px;color:#e1ebe4;white-space:pre}
+.coverTocNum{font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:16.65px;line-height:22.53px;color:#96ac9e}
+
+/* Sortable holdings tables — clickable headers + right-side search.
+   bindSortableTable() in js/app.js is the shared logic; these styles
+   only cover the chrome. 3-col leftover-cell rules live above. */
+.modalBody:has(.tableWrap){display:flex;flex-direction:column;overflow:hidden;padding:16px 20px 14px}
+.modalBody:has(.tableWrap) .tableWrap{flex:1;min-height:0;height:auto!important}
+.tableToolbar{display:flex;justify-content:flex-end;align-items:center;margin:0 0 12px;flex-shrink:0}
+.tableSearch{display:flex;align-items:center;gap:8px;width:min(340px,100%);height:36px;padding:0 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);transition:border-color .16s ease,background .16s ease}
+.tableSearch svg{stroke:rgba(255,255,255,.38);fill:none;stroke-width:1.7;stroke-linecap:round;flex-shrink:0;transition:stroke .16s ease}
+.tableSearch input{flex:1;min-width:0;height:100%;background:transparent;border:0;outline:none;color:#fff;font-size:12.5px;font-weight:300;padding:0}
+.tableSearch input::placeholder{color:rgba(255,255,255,.32)}
+.tableSearch input::-webkit-search-cancel-button{-webkit-appearance:none}
+.tableSearch:focus-within{border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.07)}
+.tableSearch:focus-within svg{stroke:var(--accent)}
+.dataTable th.thSort{cursor:pointer;user-select:none;transition:background .14s ease,color .14s ease}
+.dataTable th.thSort:hover{background:#16382c;color:rgba(255,255,255,.78)}
+.dataTable th.thSort.is-sorted{color:#fff;background:#16382c}
+.thSortBtn{display:inline-flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;text-align:inherit}
+.dataTable th.num .thSortBtn{justify-content:flex-end}
+.thChevrons{display:inline-flex;flex-direction:column;gap:1px;margin-left:6px;flex-shrink:0}
+.arr-up,.arr-dn{width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;opacity:.22;transition:opacity .14s ease,border-color .14s ease}
+.arr-up{border-bottom:4px solid currentColor}
+.arr-dn{border-top:4px solid currentColor}
+.dataTable th.thSort.is-sorted.dir-asc .arr-up{opacity:1;border-bottom-color:var(--accent)}
+.dataTable th.thSort.is-sorted.dir-desc .arr-dn{opacity:1;border-top-color:var(--accent)}
+.dataTable tbody{transition:opacity .12s ease}
+.dataTable tfoot td{position:sticky;bottom:0;z-index:3;background:#102f23;color:#fff;font-weight:600;border-top:1px solid rgba(255,255,255,.16);border-bottom:0;box-shadow:0 -6px 14px rgba(0,0,0,.18)}
+.dataTable tfoot tr:hover{background:transparent;cursor:default}
+
+/* ---- Strategy Mix slide (js/pages/07-strategy-mix.js): ApexCharts half-
+   donut center label. ApexCharts' JS options style the big center VALUE
+   text; the smaller gray caption above it renders as a separate SVG text
+   node with a fixed class name that only CSS can reach. Scoped to this
+   slide's chart container so it can't affect any other chart added later. */
+#strategyMixDonut .apexcharts-datalabel-label{font-family:'Plus Jakarta Sans',sans-serif;fill:#787878;font-weight:600}
+#strategyMixDonut .apexcharts-tooltip{font-family:'Plus Jakarta Sans',sans-serif}
+
+/* Strategy Mix: first visit only. Bars grow left→right; donut wipes after it mounts. */
+.sm-ready .smBar{transform-origin:left center;transform:scaleX(0);animation:smBarGrow .55s ease-out forwards;animation-delay:calc(var(--sm-i,0)*.07s)}
+@keyframes smBarGrow{to{transform:scaleX(1)}}
+.sm-ready .smDonut{clip-path:inset(0 100% 0 0)}
+.sm-ready .smDonut-in{animation:smDonutWipe .7s ease-out forwards}
+@keyframes smDonutWipe{to{clip-path:inset(0 0 0 0)}}
+.sm-ready .smDonutLabel{opacity:0;animation:smDonutFade .35s ease-out .4s forwards}
+@keyframes smDonutFade{to{opacity:1}}
+.sm-static .smBar,.sm-static .smDonut,.sm-static .smDonutLabel{transform:none;clip-path:none;opacity:1;animation:none}
+@media (prefers-reduced-motion:reduce){
+  .smBar,.smDonut,.smDonutLabel{transform:none;clip-path:none;opacity:1;animation:none}
+}
+
+/* Market Sentiment: first visit only. Range fill grows; driver markers slide in. */
+.ms-ready .msRangeFill{transform-origin:left center;transform:scaleX(0);animation:msRangeGrow .6s ease-out forwards}
+@keyframes msRangeGrow{to{transform:scaleX(1)}}
+.ms-ready .msMarker{transform:translateX(var(--ms-travel,0px));animation:msMarkerSlide .55s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(.2s + var(--ms-i,0)*.08s)}
+@keyframes msMarkerSlide{to{transform:translateX(0)}}
+.ms-static .msRangeFill,.ms-static .msMarker{transform:none;animation:none}
+@media (prefers-reduced-motion:reduce){
+  .msRangeFill,.msMarker{transform:none;animation:none}
+}
+
+/* Strategy Mix slide (Round 24): the donut's own hover tooltip.
+   position:fixed + living at the document root (see index.html) means
+   it's never clipped by this slide's own scaled/overflow:hidden
+   containers. */
+.donutTip{position:fixed;z-index:130;pointer-events:none;background:var(--green);color:#fff;border-radius:5px;padding:8px 10px;font-size:11px;line-height:1.5;display:none;box-shadow:0 5px 18px rgba(0,0,0,.2)}
+
+.smVintageTitle{transition:color .14s ease}
+.smVintageTitle:hover,.smVintageTitle:focus{color:#104130}
+.smPanel{position:absolute;background:#f5f5f5;border-radius:4px;pointer-events:none}
+.smRule{position:absolute;height:1px;background:#dee4df;pointer-events:none}
+.smBody b{font-weight:600;color:inherit}
+#strategyMixDonut .apexcharts-canvas,
+#strategyMixDonut .apexcharts-svg,
+#strategyMixDonut svg{background:transparent !important}
+#strategyMixDonut .apexcharts-svg > rect:first-child{fill:transparent !important}
+
+.kcBody{position:absolute;left:68px;top:244px;width:1784px;display:flex;align-items:stretch;gap:92px}
+.kcList{flex:0 0 850px;width:850px;display:flex;flex-direction:column;gap:40px}
+.kcRow{display:flex;align-items:flex-start;gap:32px}
+.kcNum{flex:0 0 37px;font-family:'Plus Jakarta Sans',sans-serif;font-size:25px;font-weight:600;line-height:1.28;letter-spacing:.85px;color:#104130}
+.kcPoint{flex:1;min-width:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:400;line-height:1.28;color:#5E5E5E}
+.kcPoint .kcEm{font-weight:600;color:inherit}
+.kcSummary{flex:1;min-width:0;box-sizing:border-box;padding:24px 28px 26px;background:#f5f5f5;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;outline:none;transition:box-shadow .16s ease,background .16s ease}
+.kcSummary:hover,.kcSummary:focus{background:#f0f0f0;box-shadow:0 0 0 1px rgba(16,65,48,.16)}
+.kcSummaryHead{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:500;line-height:1.2;color:#5E5E5E;margin:0 0 18px}
+.kcCards{display:grid;grid-template-columns:1fr 1fr;gap:38px;flex:1;min-height:0}
+.kcCard{background:#fff;border:1px solid #dee4df;border-radius:12px;padding:28px 26px 24px;display:flex;flex-direction:column;justify-content:center}
+.kcCardVal{font-family:'Plus Jakarta Sans',sans-serif;font-size:48px;font-weight:500;line-height:1.05;letter-spacing:-0.4px;color:#104130}
+.kcCardLbl{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:400;line-height:22px;color:#787878;margin-top:10px}
+.kcRatios{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:22px;padding:4px 4px 0}
+.kcRatioVal{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:500;line-height:1.1;color:#104130}
+.kcRatioLbl{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:400;line-height:20px;color:#787878;margin-top:8px}
+
+/* Portfolio Holdings slide (added right before Contact): a real, sortable,
+   scrollable <table> rather than the deck's usual absolutely-positioned
+   fig-* divs — the user explicitly asked for a functional table. Column
+   widths match the Figma export's pixel grid exactly (see
+   js/pages/13-portfolio-holdings.js's HOLD_COLS). Deliberately its own
+   light theme (white background, green #104130 accents, #eff4f1 row
+   stripe) rather than reusing .dataTable/.tableWrap/.modalCard, which are
+   all built for the dark modal/drawer overlay and would clash with this
+   slide's white background. */
+.holdTools{position:absolute;right:68px;top:154px;display:flex;align-items:center;gap:12px;z-index:8}
+.holdSearch{display:flex;align-items:center;gap:10px;width:300px;height:44px;padding:0 16px;background:#f5f5f5;border:1px solid #dee4df;border-radius:4px;box-sizing:border-box}
+.holdSearch svg{stroke:#787878;fill:none;stroke-width:1.7;stroke-linecap:round;flex-shrink:0}
+.holdSearch input{flex:1;min-width:0;height:100%;border:0;outline:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:400;color:#104130}
+.holdSearch input::placeholder{color:#787878}
+.holdSearch input::-webkit-search-cancel-button{-webkit-appearance:none}
+.holdSearch:focus-within{border-color:#104130;background:#fff}
+.holdSearch:focus-within svg{stroke:#104130}
+.holdFilter{appearance:none;height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;background:#fff;color:#104130;border:1px solid #104130;border-radius:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;cursor:pointer}
+.holdFilter svg{stroke:#104130;fill:none;stroke-width:1.8;stroke-linecap:round}
+.holdFilter:hover{background:#f5f5f5}
+.holdFilter.is-on{background:#104130;color:#fff}
+.holdFilter.is-on svg{stroke:#fff}
+.holdFilterBadge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#fff;color:#104130;font-size:11px;font-weight:700;letter-spacing:0;line-height:18px;text-align:center}
+.holdFilter.is-on .holdFilterBadge{background:#fff;color:#104130}
+.holdFilt{display:flex;flex-direction:column;gap:22px}
+.holdFiltLabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px}
+.holdFiltHint{font-size:12px;color:rgba(255,255,255,.38);margin-bottom:12px;line-height:1.4}
+.holdFiltChips{display:flex;flex-wrap:wrap;gap:8px}
+.holdFiltChip{appearance:none;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.72);border-radius:4px;padding:8px 12px;font-family:inherit;font-size:13px;cursor:pointer}
+.holdFiltChip:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.holdFiltChip.is-on{background:rgba(var(--accent-rgb),.12);border-color:rgba(var(--accent-rgb),.4);color:var(--accent)}
+.holdFiltRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.holdFiltSelect,.holdFiltInput{height:36px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);color:#fff;font-family:inherit;font-size:13px;padding:0 10px;border-radius:4px;outline:none}
+.holdFiltSelect{min-width:148px}
+.holdFiltSelect option{background:#0d2b1f;color:#fff}
+.holdFiltInput{width:100px}
+.holdFiltSelect:focus,.holdFiltInput:focus{border-color:rgba(var(--accent-rgb),.45)}
+.holdFiltA,.holdFiltB{display:inline-flex;align-items:center;gap:8px}
+.holdFiltA[hidden],.holdFiltB[hidden]{display:none!important}
+.holdFiltAnd{font-size:12px;color:rgba(255,255,255,.4)}
+.holdFiltActions{padding-top:4px}
+.holdFiltClear{appearance:none;background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:4px;height:36px;padding:0 14px;font-family:inherit;font-size:12px;letter-spacing:.06em;cursor:pointer}
+.holdFiltClear:hover{border-color:#fff;color:#fff}
+.holdExport{appearance:none;height:44px;padding:0 18px;display:inline-flex;align-items:center;gap:8px;background:#104130;color:#fff;border:0;border-radius:4px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;cursor:pointer}
+.holdExport svg{stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.holdExport:hover{background:#0c3326}
+.holdExport:active{transform:scale(.98)}
+.holdEmpty td{color:#787878;font-style:normal;padding:18px 0!important}
+.holdWrap{height:668px;display:flex;flex-direction:column;overflow:hidden}
+.holdHead{flex-shrink:0;background:#fff;border-bottom:2px solid #104130;z-index:3}
+.holdScrollBody{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:rgba(16,65,48,.32) transparent}
+.holdScrollBody::-webkit-scrollbar{width:8px;height:8px}
+.holdScrollBody::-webkit-scrollbar-track{background:transparent}
+.holdScrollBody::-webkit-scrollbar-thumb{background:rgba(16,65,48,.28);border-radius:5px;border:2px solid #fff}
+.holdScrollBody::-webkit-scrollbar-thumb:hover{background:rgba(16,65,48,.45)}
+.holdFoot{flex-shrink:0;background:#fff;z-index:3}
+.holdTable{width:1784px;border-collapse:separate;border-spacing:0;font-family:'Plus Jakarta Sans',sans-serif;table-layout:fixed}
+.holdTable thead th{background:#ffffff;text-align:left;font-size:13px;font-weight:600;letter-spacing:.01em;color:#808582;padding:0 14px 8px 0;cursor:pointer;user-select:none;white-space:nowrap}
+.holdTable thead th:hover{color:#104130}
+.hold-arrow{display:inline-block;margin-left:5px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:5px solid currentColor;opacity:0;vertical-align:middle;transition:opacity .12s ease,transform .12s ease}
+.holdTable thead th.is-sorted .hold-arrow{opacity:.85}
+.holdTable thead th.is-sorted.dir-desc .hold-arrow{transform:rotate(180deg)}
+.holdTable tbody td{font-size:11px;font-weight:400;line-height:13.86px;color:#1c1f21;padding:4.5px 14px 4.5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.holdTable tbody td.hold-green,.holdTable tbody td[class~="hold-green"]{color:#104130}
+.holdScrollBody .holdTable tbody tr:nth-child(even){background:#eff4f1}
+.holdTable td.hold-green{color:#104130}
+.holdFoot .holdTotalRow td{background:#ffffff;font-size:12px;font-weight:600;color:#1c1f21;padding:9px 14px 8px 0;white-space:nowrap}
+.holdFoot .holdTotalRow td.hold-green{color:#104130}
+
+/* Routes to Liquidity: four columns fade/rise L→R on first visit only. */
+.rtlBody{position:absolute;left:68px;top:318px;width:1784px;height:640px;display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr;column-gap:0;align-items:stretch}
+.rtlCol{padding:0 36px 0 20px;min-width:0}
+.rtlCol:first-child{padding-left:0}
+.rtlNum{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:32px;line-height:1;letter-spacing:-.32px;color:#006C5C}
+.rtlTitle{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:40px;line-height:38px;letter-spacing:-.4px;color:#393939;margin:8px 0 36px}
+.rtlDesc{font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:19px;line-height:26px;color:#393939;margin:0 0 44px}
+.rtlList{display:flex;flex-direction:column;gap:2px}
+.rtlItem{display:flex;align-items:flex-start;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:15px;line-height:19.8px;color:#787878}
+.rtlItem--break{margin-top:30px}
+.rtlArrow{width:20px;height:20px;flex:none;margin-top:0}
+.rtlCol,.rtlDivider{opacity:0}
+.rtlDivider{width:1px;background:#dddddd;align-self:stretch}
+.rtl-ready .rtlCol{animation:rtlColIn .6s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(var(--rtl-i,0)*.12s)}
+.rtl-ready .rtlDivider{transform-origin:top center;animation:rtlLineIn .55s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(var(--rtl-i,0)*.12s + .08s)}
+.rtl-static .rtlCol,.rtl-static .rtlDivider{opacity:1;transform:none;animation:none}
+@keyframes rtlColIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes rtlLineIn{from{opacity:0;transform:scaleY(0)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .rtlCol,.rtlDivider{opacity:1;transform:none;animation:none}
+}
+
+/* Discussion Points: first visit only. Each row runs L→R (Q → I → T). */
+.discIn{opacity:0}
+.disc-ready .discIn{animation:discIn .5s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(var(--disc-r,0)*.2s + var(--disc-c,0)*.08s)}
+.disc-static .discIn{opacity:1;transform:none;animation:none}
+@keyframes discIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .discIn{opacity:1;transform:none;animation:none}
+}
+
+/* Basis of Preparation: first visit only. Left column, then right. */
+.bopIn{opacity:0}
+.bop-ready .bopIn{animation:bopIn .5s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(var(--bop-c,0)*.16s + var(--bop-r,0)*.1s)}
+.bop-static .bopIn{opacity:1;transform:none;animation:none}
+@keyframes bopIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .bopIn{opacity:1;transform:none;animation:none}
+}
+
+/* Disclaimer: first visit only. Columns move L→R. */
+.dlIn{opacity:0}
+.dl-ready .dlIn{animation:dlIn .5s cubic-bezier(.22,.82,.24,1) forwards;animation-delay:calc(var(--dl-i,0)*.12s)}
+.dl-static .dlIn{opacity:1;transform:none;animation:none}
+@keyframes dlIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .dlIn{opacity:1;transform:none;animation:none}
+}
+
+/* Next Steps: cards drop in one by one; matching dot fills in the same beat; hover lifts one and eases the others down. */
+.nsStep{z-index:2;pointer-events:none;transition:transform .5s cubic-bezier(.22,.82,.24,1)}
+.ns-static .nsStep,.ns-live .nsStep{pointer-events:auto}
+.nsStepInner{height:100%;opacity:0;transform:translateY(14px)}
+.nsCard{transition:box-shadow .5s cubic-bezier(.22,.82,.24,1)}
+.nsDot .nsDotOn{opacity:0}
+.ns-ready .nsStepInner,.ns-ready .nsDot .nsDotOn{animation-duration:.9s;animation-timing-function:cubic-bezier(.22,.82,.24,1);animation-fill-mode:forwards}
+.ns-ready .nsStepInner{animation-name:nsPlace}
+.ns-ready .nsDot .nsDotOn{animation-name:nsDotOn}
+.ns-ready .nsStep[data-ns="1"] .nsStepInner,.ns-ready .nsDot[data-ns="1"] .nsDotOn{animation-delay:0s}
+.ns-ready .nsStep[data-ns="2"] .nsStepInner,.ns-ready .nsDot[data-ns="2"] .nsDotOn{animation-delay:.18s}
+.ns-ready .nsStep[data-ns="3"] .nsStepInner,.ns-ready .nsDot[data-ns="3"] .nsDotOn{animation-delay:.36s}
+.ns-ready .nsStep[data-ns="4"] .nsStepInner,.ns-ready .nsDot[data-ns="4"] .nsDotOn{animation-delay:.54s}
+.ns-ready .nsStep[data-ns="5"] .nsStepInner,.ns-ready .nsDot[data-ns="5"] .nsDotOn{animation-delay:.72s}
+.ns-live:has(.nsStep:hover) .nsStep,.ns-static:has(.nsStep:hover) .nsStep{transform:translateY(10px)}
+.ns-live:has(.nsStep:hover) .nsStep:hover,.ns-static:has(.nsStep:hover) .nsStep:hover{transform:translateY(-10px);z-index:4}
+.ns-live .nsStep:hover .nsCard,.ns-static .nsStep:hover .nsCard{box-shadow:0 20px 40px rgba(0,0,0,.2)}
+.ns-static .nsStepInner{opacity:1;transform:none;animation:none}
+.ns-static .nsDot .nsDotOn{opacity:1;animation:none}
+@media (prefers-reduced-motion:reduce){
+  .nsStepInner{opacity:1;transform:none;animation:none}
+  .nsDot .nsDotOn{opacity:1;animation:none}
+  .nsStep{transition:transform .35s ease}
+}
+@keyframes nsPlace{to{opacity:1;transform:translateY(0)}}
+@keyframes nsDotOn{to{opacity:1}}
+
+/* Manager Concentration slide (Round 49, inserted after Strategy Mix): a
+   second real sortable <table> — same convention as .holdTable above
+   (js/pages/08-manager-concentration.js's bindManagerConcentrationSort()
+   mirrors bindPortfolioHoldingsSort()), just short enough (10 rows +
+   pinned Remaining/Total) that it needs no separate scroll body. */
+.mcLegend{position:absolute;left:68px;top:786px;width:1000px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:14px 56px}
+.mcLegendItem{display:flex;align-items:center;gap:10px;min-width:0}
+.mcLegendBadge{width:20px;height:20px;border-radius:50%;background:#006C5C;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1;flex:none}
+.mcLegendText{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:13px;color:#393939;white-space:nowrap}
+.mcWrap{box-sizing:border-box;padding:14px 18px 16px;background:#f5f5f5;border-radius:4px}
+.mcTable{width:100%;border-collapse:separate;border-spacing:0;font-family:'Plus Jakarta Sans',sans-serif;table-layout:fixed}
+.mcTable thead th{background:transparent;text-align:right;font-size:15px;font-weight:600;letter-spacing:.01em;color:#787878;padding:8px 0 10px;cursor:pointer;user-select:none;white-space:nowrap;border-top:none;border-bottom:1px solid #dee4df}
+.mcTable thead th:first-child{text-align:left}
+.mcTable thead th:hover{color:#104130}
+.mc-arrow{display:inline-block;margin-left:5px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:5px solid currentColor;opacity:0;vertical-align:middle;transition:opacity .12s ease,transform .12s ease}
+.mcTable thead th.is-sorted .mc-arrow{opacity:.85}
+.mcTable thead th.is-sorted.dir-desc .mc-arrow{transform:rotate(180deg)}
+.mcTable tbody td{font-size:12.87px;font-weight:500;color:#1a1a1a;padding:7px 0;text-align:right;white-space:nowrap;vertical-align:middle;border:none}
+.mcTable tbody td:first-child{text-align:left}
+.mcTable td.mc-green{color:#104130;font-weight:600}
+.mcTable td.mc-muted{color:#787878;font-weight:400}
+.mc-namecell{display:flex;align-items:center;gap:10px;min-width:0}
+.mc-name{width:178px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-bar{height:11px;background:#104130;border-radius:3px;flex:none;transform-origin:left center}
+.mcTbody-play .mc-bar{transform:scaleX(0);animation:sddBarGrow .55s ease-out forwards;animation-delay:calc(var(--mc-bar-i,0)*.07s)}
+.mcTable tbody .mcRemainingRow td{color:#1a1a1a}
+.mcTable tbody .mcTotalRow td{font-weight:700;border-top:1px solid #dee4df;padding-top:8px}
+.mcTotalRow td.mc-green{color:#104130}
+/* Round 91: click-to-drill-down — table rows for real managers (not the
+   pinned Remaining/Total rows) open the same manager drawer the chart
+   bubbles below open. */
+.mcTable tbody tr.mcClickableRow{cursor:pointer}
+.mcTable tbody tr.mcClickableRow:hover td{background:#eef5f0}
+.mcChartPanel path.apexcharts-marker{cursor:pointer}
+
+/* Manager Concentration leftover Apex chrome (arrow / axis tips).
+   Do not hide .apexcharts-tooltip — Sell vs Hold still uses it. */
+.apexcharts-tooltip-arrow,
+.apexcharts-tooltip-marker,
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip{display:none!important}
+.mcChartPanel .apexcharts-datalabels text,
+.mcChartPanel .apexcharts-data-labels text{text-anchor:middle;dominant-baseline:central}
+
+/* Strategy Deep Dive: Private Equity slide (inserted before Liquidity
+   Options): a third real sortable <table> for its own mini Manager
+   Concentration view — separate .sdd* classes (not a reuse of .mcTable)
+   because this table's own Figma export measures a different width/
+   font-scale (818.6px, 13.77-15.6px type) than the Manager Concentration
+   slide's table (718px, 12-12.87px type), and the name+bar sit side by
+   side in one cell here rather than name-above-bar. */
+.sddPoints{position:absolute;left:68px;top:384px;width:800px;display:flex;flex-direction:column;gap:40px}
+.sddPoint{display:flex;align-items:flex-start;gap:32px}
+.sddNum{flex:none;width:44px;height:44px;border-radius:50%;background:#104130;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:18px;line-height:44px;text-align:center;letter-spacing:.02em}
+.sddPointCopy{flex:1;min-width:0}
+.sddPointHead{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:22px;line-height:1.24;color:#104130}
+.sddPointBody{margin-top:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:16px;line-height:22px;color:#808582}
+.sddWrap{box-sizing:border-box;padding:16px 24px 10px 20px;background:#f5f5f5;border-radius:4px}
+.sddTable{width:100%;border-collapse:separate;border-spacing:0;font-family:'Plus Jakarta Sans',sans-serif;table-layout:fixed}
+.sddTable thead th{background:transparent;text-align:right;font-size:15px;font-weight:600;letter-spacing:.01em;color:#787878;padding:4px 0 10px;cursor:pointer;user-select:none;white-space:nowrap;border:none;border-bottom:1px solid #dee4df}
+.sddTable thead th:first-child{text-align:left}
+.sddTable thead th:last-child,.sddTable tbody td:last-child{text-align:right;padding-right:0}
+.sddTable thead th:hover{color:#104130}
+.sdd-arrow{display:inline-block;margin-left:5px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:5px solid currentColor;opacity:0;vertical-align:middle;transition:opacity .12s ease,transform .12s ease}
+.sddTable thead th.is-sorted .sdd-arrow{opacity:.85}
+.sddTable thead th.is-sorted.dir-desc .sdd-arrow{transform:rotate(180deg)}
+.sddTable tbody td{font-size:14.68px;font-weight:500;color:#1a1a1a;padding:7px 0;text-align:right;white-space:nowrap;vertical-align:middle;border:none}
+.sddTable tbody td:first-child{text-align:left}
+.sdd-namecell{display:flex;align-items:center;gap:5.5px}
+.sdd-name{width:194px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#1a1a1a}
+.sdd-bar{height:11px;border-radius:3px;background:#104130;flex-shrink:0;transform-origin:left center}
+.sddTbody-play .sdd-bar{transform:scaleX(0);animation:sddBarGrow .55s ease-out forwards;animation-delay:calc(var(--sdd-bar-i,0)*.07s)}
+@keyframes sddBarGrow{to{transform:scaleX(1)}}
+.sddTable td.sdd-green{color:#104130;font-weight:600}
+.sddTable td.sdd-muted{color:#787878;font-weight:400}
+.sddTable tbody tr.sddClickableRow{cursor:pointer}
+.sddTable tbody tr.sddClickableRow:hover td{background:#eef5f0}
+.sddRemainingRow td{color:#787878}
+.sddRemainingRow .sdd-name{color:#787878;font-weight:400}
+.sddRemainingRow .sdd-bar{background:#4a9573}
+.sddTable tbody .sddTotalRow td{font-weight:600;color:#787878;border-top:1px solid #dee4df;padding-top:10px}
+.sddTable tbody .sddTotalRow td.sdd-green{color:#104130}
+
+.sddNavCol{display:flex;align-items:flex-end;justify-content:center;z-index:2;cursor:pointer}
+.sddNavCol::before{content:'';position:absolute;inset:0;background:rgba(16,65,48,.06);opacity:0;pointer-events:none}
+.sddNavCol:hover::before{opacity:1}
+.sddNavBar{width:55%;background:#104130;border-radius:3px 3px 0 0;position:relative;z-index:1;transform-origin:bottom center;transition:height .35s ease}
+.sdd-ready .sddNavBar{transform:scaleY(0);animation:sddNavGrow .55s ease-out forwards;animation-delay:calc(var(--sdd-i,0)*.08s)}
+@keyframes sddNavGrow{to{transform:scaleY(1)}}
+.sdd-static .sddNavBar{transform:none;animation:none}
+.sddNavValueText{transition:top .35s ease}
+
+@media (prefers-reduced-motion:reduce){
+  .sddNavBar{transform:none;animation:none;transition:none}
+  .sddDpiSeg,.sddNavValueText{transition:none}
+  .sddTbody-play .sdd-bar,.mcTbody-play .mc-bar{transform:none;animation:none}
+}
+
+.sddDpiBar{display:flex;height:11px;overflow:hidden}
+.sddDpiSeg{display:block;height:100%;flex:none;transition:width .35s ease}
+
+#marketSentimentChart svg,#marketSentimentChart .apexcharts-line{shape-rendering:geometricPrecision}
+#marketSentimentChart .apexcharts-line{stroke-linecap:round;stroke-linejoin:round}
+.apexcharts-tooltip{z-index:140}
+
+/* Footer chrome — same color on every slide. */
+[data-fig-name="chrome-footer"],
+[data-fig-name="chrome-page"]{color:#96ac9e!important}
+
+/* Market Sentiment (Round 83): dropdown-driven live updates. Separate
+   from the .ms-ready/.ms-static entrance-animation rules above (those
+   only gate the FIRST-visit slide-in via `animation`); these plain
+   `transition` rules apply whenever msApplySelection() (js/pages/09-
+   market-sentiment.js) later changes left/width/color inline styles in
+   response to a Strategy/Vintage dropdown change, so the range bar and
+   the 4 driver markers visibly glide to their new cohort's position
+   instead of jumping. */
+.msRangeFill{transition:left .45s cubic-bezier(.22,.82,.24,1),width .45s cubic-bezier(.22,.82,.24,1)}
+.msMarker{transition:left .45s cubic-bezier(.22,.82,.24,1),border-color .3s ease}
+[data-fig-name="driver-tag"]{transition:background-color .3s ease,color .3s ease}
+[data-fig-name="driver-segment-label"]{transition:color .3s ease}
+@media (prefers-reduced-motion:reduce){
+  .msRangeFill,.msMarker,[data-fig-name="driver-tag"],[data-fig-name="driver-segment-label"]{transition:none}
+}
+
+/* Market Sentiment (Round 83): the Strategy/Vintage dropdowns replacing
+   the old static subtitle text. Styled as clickable heading text (same
+   size/weight/baseline the static subtitle used to have), not a boxy
+   form control, since these sit right under a slide title. */
+.msFilterSelect{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:600;
+  font-size:40px;
+  line-height:38px;
+  color:#104130;
+  background-color:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  cursor:pointer;
+  padding:0 30px 2px 0;
+  margin:0;
+  outline:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><path d='M4 7l5 5 5-5' stroke='%23104130' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 4px center;
+  transition:border-color .2s ease;
+}
+.msFilterSelect:hover,.msFilterSelect:focus{border-bottom-color:#104130}
+.msFilterSep{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:600;
+  font-size:40px;
+  line-height:38px;
+  color:#787878;
+}
+
+/* Strategy Deep Dive (Round 92): the Strategy dropdown replacing the
+   old fixed "Private Equity" title suffix. Same clickable-heading-text
+   treatment as Market Sentiment's .msFilterSelect above, just sized to
+   match this slide's TITLE typography (46px/weight 500) rather than a
+   subtitle's. */
+.sddTitleSelect{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:500;
+  font-size:46px;
+  line-height:1;
+  color:#104130;
+  background-color:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  cursor:pointer;
+  padding:0 34px 2px 0;
+  margin:0;
+  outline:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 18 18'><path d='M4 7l5 5 5-5' stroke='%23104130' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 4px center;
+  transition:border-color .2s ease;
+}
+.sddTitleSelect:hover,.sddTitleSelect:focus{border-bottom-color:#104130}

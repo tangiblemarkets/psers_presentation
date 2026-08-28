@@ -39,8 +39,9 @@ function renderCoverSlide(){
   const firstTop = 336;
   const tocHtml = toc.map((item, i) => {
     const top = firstTop + i * rowH;
+    const num = String(item.slide - 1).padStart(2, '0');
     const edge = i < toc.length - 1 ? ' coverTocRow--line' : '';
-    return `<div class="coverTocRow${edge}" data-action="goSlide" data-value="${item.slide}" role="button" tabindex="0" aria-label="${item.label}" style="position:absolute;left:1161.41px;top:${top.toFixed(2)}px;width:604.99px;height:${rowH}px;"><span class="coverTocLabel">${item.label}</span></div>`;
+    return `<div class="coverTocRow${edge}" data-action="goSlide" data-value="${item.slide}" role="button" tabindex="0" aria-label="${item.label}" style="position:absolute;left:1161.41px;top:${top.toFixed(2)}px;width:604.99px;height:${rowH}px;"><span class="coverTocLabel">${item.label}</span><span class="coverTocNum">${num}</span></div>`;
   }).join('');
   return `<div class="fig-slide" style="position:relative;width:1920px;height:1080px;background:#104130;overflow:hidden;">
   <div class="fig-text" data-fig-name="title" style="position:absolute;left:68.00px;top:307.00px;width:680.00px;height:92.00px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-style:normal;font-size:84.00px;line-height:92.40px;letter-spacing:0.00px;color:#f5f5f0;text-align:left;white-space:pre;">Tangible x PSERS</div>

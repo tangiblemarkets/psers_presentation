@@ -34,7 +34,7 @@
 //   Growth & Venture   -> Venture Capital, Growth Equity
 const SDD_STRATEGIES = [
   { key: 'private-equity', label: 'Private Equity',    tier1Keys: ['Buyout', 'PE Special Situations'] },
-  { key: 'real-estate-infra', label: 'Real Estate and Infrastructure', navLabel: 'RE & Infra NAV',
+  { key: 'real-estate-infra', label: 'Real Estate & Infra', navLabel: 'RE & Infra NAV',
     tier1Keys: ['Real Estate Partnership', 'Real Estate Co-Investment', 'Direct Real Estate', 'Infrastructure Partnership', 'Infrastructure Co-Investment'] },
   { key: 'credit',         label: 'Private Credit',     tier1Keys: ['Private Credit Partnership', 'Private Credit Co-Investment'] },
   { key: 'growth-venture', label: 'Growth & Venture',   tier1Keys: ['Venture Capital', 'Growth Equity'] }

@@ -250,7 +250,7 @@ function msPickBtnHtml(id, label) {
 }
 
 function msTitleBarHtml() {
-  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1784px;height:55px;display:flex;align-items:center;gap:14px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
+  return '\n  <div id="msTitleBar" data-fig-name="title" style="position:absolute;left:68px;top:136px;width:1784px;height:58px;display:flex;align-items:center;gap:12px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:46px;color:#104130;white-space:nowrap;">' +
     '<span>' + esc(MARKET_SENTIMENT_DATA.title) + ':</span>' +
     '<span class="msPickRow">' +
       msPickBtnHtml('msStrategyLabel', msStrategyLabel()) +

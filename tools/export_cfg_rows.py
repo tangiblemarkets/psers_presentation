@@ -41,16 +41,9 @@ CFG.rows before writing this, not assumed):
   — never recomputed here (Round 69's rule).
 - unfunded / commitment_revised / unfunded_pct / funded_pct: passthrough
   from the clean record's unfunded_m/commitment_revised_m/unfunded_pct/
-  funded_pct — added to psers_data_pipeline.py's to_millions_record() in
-  this same round specifically so this exporter (and any future one that
-  needs "% unfunded") doesn't have to re-derive the FX-converted unfunded
-  figure itself. See that function's own comment for the standardization
-  note: this migration puts every row on ONE unfunded_pct formula
-  (unfunded / commitment_revised), where the pre-migration CFG.rows used
-  that formula only for the 40 rows Round 71 touched and a different one
-  (unfunded / original commitment) for the other ~328 — confirmed by
-  reverse-engineering both formulas against the live data before choosing
-  which to standardize on.
+  funded_pct. unfunded_pct is Unfunded $ / Commitment $, capped at 100%,
+  with a 0 fallback when commitment is 0. funded_pct is independent
+  (paid / (paid + unfunded)).
 - strategy: NOT the same field as the shared clean record's own `strategy`
   (that's the coarse Revised-Strategy-TANGIBLE-mapped label used by
   Strategy Mix/Portfolio Holdings/Key Considerations, e.g. "Real Estate &
@@ -140,18 +133,9 @@ def _legacy_strategy(record):
 
 
 def _slide_strategy(record):
-    """Same 5-way bucket as Strategy Mix (export_strategy_mix._category).
-    Private Equity / Private Credit / Growth & Venture / Real Estate /
-    Infrastructure — from Revised Strategy (TANGIBLE), with Real Estate &
-    Infra split on portfolio."""
-    raw = record["strategy_raw"]
-    if raw == "Real Estate & Infra":
-        return "Real Estate" if record["portfolio"] == "Real Estate" else "Infrastructure"
-    return {
-        "Private Equity": "Private Equity",
-        "Private Credit": "Private Credit",
-        "VC & Growth": "Growth & Venture",
-    }[raw]
+    """Column E "Strategy for Fund Level Metrics", with VC & Growth mapped
+    to Growth & Venture. Same 5-way bucket as Strategy Mix."""
+    return record["strategy_fund"]
 
 
 def _vintage_segment(vintage):
@@ -336,7 +320,7 @@ def run(clean_records=None):
         raise RuntimeError(f"{data_js_path} is missing a '{TOTAL_NAV_PREFIX}' line.")
     tn_start = content.index(TOTAL_NAV_PREFIX)
     tn_end = content.index("\n", tn_start)
-    content = content[:tn_start] + f"{TOTAL_NAV_PREFIX}{data['totalNav']}" + content[tn_end:]
+    content = content[:tn_start] + f"{TOTAL_NAV_PREFIX}{data['totalNav']}," + content[tn_end:]
 
     with open(data_js_path, "w", encoding="utf-8") as f:
         f.write(content)

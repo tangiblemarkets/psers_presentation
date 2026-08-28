@@ -40,16 +40,3 @@ Do not add another numbers file.
 | `source-data/` | The Excel workbook |
 | `tools/` | `python3 tools/export.py` |
 | `cursor.md` | Build log |
-
-## Changelog
-
-**2026-08-28 — Windows About slide export**
-- About Tangible logos are inlined so Export all / Export current work on Windows
-- Empty leftover pages from a failed About capture are fixed
-
-**2026-08-28 — Windows Export all**
-- Export all no longer dies on page 3 on Windows
-- One bad page is skipped; the rest still save
-
-**2026-08-28 — Sort menu click-outside**
-- Click outside (or Escape) closes the drawer sort menu

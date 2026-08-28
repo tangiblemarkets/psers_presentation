@@ -2,6 +2,17 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Re-export Excel
+
+- Clean Data added **Strategy for Fund Level Metrics** and **Unfunded Commitment ($)**.
+- Column map in `tools/psers_data_pipeline.py` updated (later cols shifted).
+- Unfunded now reads the USD column, not FX × local.
+- `slideStrategy` comes from the new fund-level strategy column.
+- Re-ran `python3 tools/export.py` → 363 Include rows.
+- Missing comma after `totalNav` (broke the deck) is fixed.
+
+**Files:** `tools/psers_data_pipeline.py`, `tools/export_cfg_rows.py`, `js/data.js`, `README.md`.
+
 ## 2026-08-28 — Windows About slide export
 
 - Logo PNG is inlined (`js/slide-data/02-about-tangible-logos.js`) so Windows `file://` does not fetch it during PDF capture.

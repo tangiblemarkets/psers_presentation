@@ -64,52 +64,58 @@ SHEET_NAME = "Clean Data"
 HEADER_ROW = 2
 DATA_START_ROW = 3
 
-# Clean Data column layout (0-based index into a min_col=1,max_col=26 row
+# Clean Data column layout (0-based index into a min_col=1,max_col=28 row
 # tuple — i.e. index 0 is column A). Re-derived by reading the sheet's own
 # header row, not hand-counted — see _verify_columns() below, which is run
 # every time load_included_rows() is called so a reshuffled workbook fails
 # loudly instead of silently mis-mapping a column.
+#
+# 2026-08-28 workbook added:
+#   E  Strategy for Fund Level Metrics (splits Real Estate & Infra)
+#   T  Unfunded Commitment ($) (USD — no FX conversion needed)
+# and shifted later columns right. Dollar headers are now "Name ($)".
 COL = {
-    "investment": 2,          # C: Investment Name
-    "strategy_raw": 3,        # D: Revised Strategy (TANGIBLE)
-    "portfolio": 4,           # E: Portfolio Name
-    "asset": 5,                # F: Asset Name
-    "manager": 6,              # G: Manager Name
-    "vehicle": 7,               # H: Vehicle Type
-    "tier1": 8,                  # I: Asset Class Tier 1 (Investment)
-    "tier2": 9,                   # J: Asset Class Tier 2 (Investment)
-    "tier3": 10,                    # K: Asset Class Tier 3 (Investment)
-    "tier4": 11,                     # L: Asset Class Tier 4 (Investment)
-    "vintage": 12,                    # M: Vintage
-    "commitment": 13,                  # N: Commitment (USD)
-    "paid_in": 14,                      # O: Paid in (USD) — this deck's "Called"
-    "distributions": 15,                 # P: Distributions (USD)
-    "nav": 16,                            # Q: NAV (USD)
-    "total_value": 17,                     # R: Total Value (USD)
-    "valuation_date": 18,                   # S: Latest Valuation Date
-    "commitment_local": 19,                   # T: Commitment (Local) — UNUSED
-    "paid_in_local": 20,                       # U: Total Paid in (Local) — UNUSED
-    "distributions_local": 21,                  # V: Total Distribution (Local) — UNUSED
-    "nav_local": 22,                              # W: Latest Valuation (Local) — UNUSED
-    "unfunded_local": 23,                          # X: Unfunded Commitment (Local) — used
-                                                     # only via load_fx_rates()-converted USD (no
-                                                     # USD "Unfunded Commitment" column exists in
-                                                     # Clean Data at all -- see load_included_rows())
-    "local_currency": 24,                           # Y: Local Currency — used to pick this row's
-                                                     # FX rate for the unfunded conversion above
-    "include_exclude": 25,                            # Z: Include / Exclude
+    "investment": 2,           # C: Investment Name
+    "strategy_raw": 3,         # D: Revised Strategy (TANGIBLE)
+    "strategy_fund": 4,        # E: Strategy for Fund Level Metrics
+    "portfolio": 5,            # F: Portfolio Name
+    "asset": 6,                # G: Asset Name
+    "manager": 7,              # H: Manager Name
+    "vehicle": 8,              # I: Vehicle Type
+    "tier1": 9,                # J: Asset Class Tier 1 (Investment)
+    "tier2": 10,               # K: Asset Class Tier 2 (Investment)
+    "tier3": 11,               # L: Asset Class Tier 3 (Investment)
+    "tier4": 12,               # M: Asset Class Tier 4 (Investment)
+    "vintage": 13,             # N: Vintage
+    "commitment": 14,          # O: Commitment ($)
+    "paid_in": 15,             # P: Paid in ($) — this deck's "Called"
+    "distributions": 16,       # Q: Distributions ($)
+    "nav": 17,                 # R: NAV ($)
+    "total_value": 18,         # S: Total Value ($)
+    "unfunded": 19,            # T: Unfunded Commitment ($)
+    "valuation_date": 20,      # U: Latest Valuation Date
+    "commitment_local": 21,    # V: Commitment (Local) — UNUSED
+    "paid_in_local": 22,       # W: Total Paid in (Local) — UNUSED
+    "distributions_local": 23, # X: Total Distribution (Local) — UNUSED
+    "nav_local": 24,           # Y: Latest Valuation (Local) — UNUSED
+    "unfunded_local": 25,      # Z: Unfunded Commitment (Local) — UNUSED
+    "local_currency": 26,      # AA: Local Currency
+    "include_exclude": 27,     # AB: Include / Exclude
 }
+DATA_MAX_COL = 28  # AB
 
 EXPECTED_HEADERS = {
     "investment": "Investment Name",
     "strategy_raw": "Revised Strategy (TANGIBLE)",
+    "strategy_fund": "Strategy for Fund Level Metrics",
     "manager": "Manager Name",
     "vintage": "Vintage",
-    "commitment": "Commitment",
-    "paid_in": "Paid in",
-    "distributions": "Distributions",
-    "nav": "NAV",
-    "total_value": "Total Value",
+    "commitment": "Commitment ($)",
+    "paid_in": "Paid in ($)",
+    "distributions": "Distributions ($)",
+    "nav": "NAV ($)",
+    "total_value": "Total Value ($)",
+    "unfunded": "Unfunded Commitment ($)",
     "include_exclude": "Include / Exclude",
 }
 
@@ -126,6 +132,16 @@ STRATEGY_DISPLAY_LABELS = {
     "Private Credit": "Private Credit",
     "Private Equity": "Private Equity",
     "VC & Growth": "Growth & Venture",
+}
+
+# Column E "Strategy for Fund Level Metrics" — same four families as
+# Revised Strategy, but Real Estate & Infra is already split.
+FUND_LEVEL_STRATEGY_LABELS = {
+    "Private Equity": "Private Equity",
+    "Private Credit": "Private Credit",
+    "VC & Growth": "Growth & Venture",
+    "Real Estate": "Real Estate",
+    "Infrastructure": "Infrastructure",
 }
 
 
@@ -156,7 +172,7 @@ def load_fx_rates(path=SOURCE_XLSX):
     hand for the 40 non-USD CFG.rows funds it fixed; this function
     generalizes that to every row, every run, rather than a one-off patch).
 
-    Located by searching column AE (index 30, 0-based) for the literal cell
+    Located by searching column AG (index 32, 0-based) for the literal cell
     text "Currency" rather than a hardcoded row number — the table's exact
     row position isn't load-bearing, only its column and the "Currency" /
     "USD per 1 unit" header immediately above the rate rows. Reads rows
@@ -166,8 +182,8 @@ def load_fx_rates(path=SOURCE_XLSX):
     """
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     ws = wb[SHEET_NAME]
-    fx_col = 30  # 0-based index of column AE (name); AF (index 31) holds the rate
-    all_rows = list(ws.iter_rows(min_row=1, max_row=40, min_col=1, max_col=32, values_only=True))
+    fx_col = 32  # 0-based index of column AG (name); AH (index 33) holds the rate
+    all_rows = list(ws.iter_rows(min_row=1, max_row=40, min_col=1, max_col=34, values_only=True))
     header_row_idx = None
     for i, r in enumerate(all_rows):
         if len(r) > fx_col and r[fx_col] == "Currency":
@@ -176,7 +192,7 @@ def load_fx_rates(path=SOURCE_XLSX):
     if header_row_idx is None:
         raise RuntimeError(
             "Could not find the FX RATES table's 'Currency' header in "
-            "column AE of the Clean Data sheet — the table may have moved; "
+            "column AG of the Clean Data sheet — the table may have moved; "
             "update load_fx_rates() in psers_data_pipeline.py before "
             "trusting any unfunded/commitment_revised figure."
         )
@@ -203,10 +219,9 @@ def load_included_rows(path=SOURCE_XLSX):
     dollars, not millions — callers convert/format for their own slide)."""
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     ws = wb[SHEET_NAME]
-    all_rows = list(ws.iter_rows(min_row=HEADER_ROW, min_col=1, max_col=26, values_only=True))
+    all_rows = list(ws.iter_rows(min_row=HEADER_ROW, min_col=1, max_col=DATA_MAX_COL, values_only=True))
     header_row = all_rows[0]
     _verify_columns(header_row)
-    fx_rates = load_fx_rates(path)
 
     out = []
     for r in all_rows[DATA_START_ROW - HEADER_ROW:]:
@@ -222,33 +237,26 @@ def load_included_rows(path=SOURCE_XLSX):
                 f"{r[COL['investment']]!r} — add it to STRATEGY_DISPLAY_LABELS "
                 f"in psers_data_pipeline.py (don't guess a label per-export)."
             )
+        strategy_fund_raw = r[COL["strategy_fund"]]
+        if strategy_fund_raw not in FUND_LEVEL_STRATEGY_LABELS:
+            raise RuntimeError(
+                f"Unmapped fund-level strategy {strategy_fund_raw!r} on row for "
+                f"{r[COL['investment']]!r} — add it to FUND_LEVEL_STRATEGY_LABELS "
+                f"in psers_data_pipeline.py (don't guess a label per-export)."
+            )
 
         commitment = r[COL["commitment"]] or 0
         paid_in = r[COL["paid_in"]] or 0
         distributions = r[COL["distributions"]] or 0
         nav = r[COL["nav"]] or 0
         total_value = r[COL["total_value"]] or 0
-
-        unfunded_local = r[COL["unfunded_local"]] or 0
-        local_currency = r[COL["local_currency"]]
-        if local_currency not in fx_rates:
-            raise RuntimeError(
-                f"Local Currency {local_currency!r} on row for "
-                f"{r[COL['investment']]!r} has no matching entry in the "
-                f"workbook's own FX RATES table — add it there (or check "
-                f"load_fx_rates() if the table format changed) before "
-                f"trusting any unfunded/commitment_revised figure."
-            )
-        # No USD "Unfunded Commitment" column exists anywhere in this
-        # workbook (see load_fx_rates()'s docstring) -- converted here from
-        # the Local figure using the sheet's own FX table, same approach
-        # Round 71 used by hand for the 40 non-USD CFG.rows funds it fixed.
-        unfunded = unfunded_local * fx_rates[local_currency]
+        unfunded = r[COL["unfunded"]] or 0
 
         out.append({
             "investment": r[COL["investment"]],
             "strategy_raw": strategy_raw,
             "strategy": STRATEGY_DISPLAY_LABELS[strategy_raw],
+            "strategy_fund": FUND_LEVEL_STRATEGY_LABELS[strategy_fund_raw],
             "portfolio": r[COL["portfolio"]],
             "asset": r[COL["asset"]],
             "manager": r[COL["manager"]],
@@ -264,7 +272,7 @@ def load_included_rows(path=SOURCE_XLSX):
             "nav": nav,
             "total_value": total_value,
             "unfunded": unfunded,
-            "local_currency": local_currency,
+            "local_currency": r[COL["local_currency"]],
         })
     return out
 
@@ -279,7 +287,7 @@ def count_rows(path=SOURCE_XLSX):
     without re-implementing the Include/Exclude scan themselves."""
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     ws = wb[SHEET_NAME]
-    all_rows = list(ws.iter_rows(min_row=HEADER_ROW, min_col=1, max_col=26, values_only=True))
+    all_rows = list(ws.iter_rows(min_row=HEADER_ROW, min_col=1, max_col=DATA_MAX_COL, values_only=True))
     total = included = excluded = 0
     for r in all_rows[DATA_START_ROW - HEADER_ROW:]:
         if r[COL["investment"]] is None:
@@ -344,6 +352,21 @@ def js_string_literal(s):
     return str(s).replace("\\", "\\\\").replace("'", "\\'")
 
 
+def unfunded_pct(unfunded, commitment):
+    """Unfunded $ / Commitment $, as a 0–1 fraction.
+    Capped at 1.0 (100%). Commitment of 0 (or any error) → 0."""
+    try:
+        c = float(commitment or 0)
+        if c == 0:
+            return 0.0
+        p = float(unfunded or 0) / c
+        if p != p:  # NaN
+            return 0.0
+        return round(min(1.0, p), 6)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return 0.0
+
+
 def to_millions_record(r):
     """Convert one raw-dollar row (a dict from load_included_rows()) into a
     JSON-friendly record: dollar figures as numeric millions (not the
@@ -357,6 +380,7 @@ def to_millions_record(r):
         "investment": r["investment"],
         "strategy": r["strategy"],
         "strategy_raw": r["strategy_raw"],
+        "strategy_fund": r["strategy_fund"],
         "portfolio": r["portfolio"],
         "asset": r["asset"],
         "manager": r["manager"],
@@ -388,27 +412,18 @@ def to_millions_record(r):
         # kept here, not exporter-local, since they're general portfolio
         # metrics (any future exporter needing "% unfunded" should reuse
         # these, not re-derive from unfunded/FX itself -- same reasoning as
-        # every other field in this record). commitment_revised is "paid +
-        # unfunded", NOT the original Commitment column -- some funds have
-        # paid-in exceeding their original commitment (recycling
-        # provisions), so commitment_revised is the correct denominator for
-        # "% unfunded of what's actually committed today", not commitment_m.
-        # unfunded_pct/funded_pct are always complementary (funded_pct =
-        # 1 - unfunded_pct) by construction -- CFG.rows' pre-migration data
-        # had this invariant hold everywhere too, confirmed by inspection,
-        # but its per-row unfunded_pct was inconsistently computed (against
-        # original commitment for legacy rows, against commitment_revised
-        # only for the 40 rows Round 71 touched) -- this migration
-        # standardizes every row on commitment_revised, matching Round 71's
-        # own (more correct) formula rather than the legacy one.
+        # every other field in this record).
+        # unfunded_pct = Unfunded $ / Commitment $, capped at 100%;
+        # zero commitment (or any error) falls back to 0.
+        # funded_pct stays paid / (paid + unfunded) and is independent.
         "unfunded_m": round(r["unfunded"] / 1e6, 6),
         "commitment_revised_m": round(r["paid_in"] / 1e6 + r["unfunded"] / 1e6, 6),
-        "unfunded_pct": (
-            round((r["unfunded"] / 1e6) / (r["paid_in"] / 1e6 + r["unfunded"] / 1e6), 6)
-            if (r["paid_in"] + r["unfunded"]) else 0.0
-        ),
+        "unfunded_pct": unfunded_pct(r["unfunded"], r["commitment"]),
     }
-    record["funded_pct"] = round(1 - record["unfunded_pct"], 6)
+    paid_plus_unfunded = r["paid_in"] + r["unfunded"]
+    record["funded_pct"] = (
+        round(r["paid_in"] / paid_plus_unfunded, 6) if paid_plus_unfunded else 0.0
+    )
     return record
 
 

@@ -1,47 +1,6 @@
-// renderMarketSentimentSlide() — "Market Sentiment by Strategy and
-// Vintage". Originally a static, per-combination slide (Round 42); as of
-// Round 83 this is a fully dynamic slide, per the user's explicit
-// request ("instead of making many duplicates pages... lets modify them
-// and make all data point change in a smooth way"): a settings drawer
-// (Strategy + Vintage) lets the viewer pick any real combination, and
-// EVERY number in both panels — the 4 "Pricing Drivers", the Indicative
-// Pricing range/proceeds, and all 4 "Sell vs Hold" input tiles plus the
-// chart itself — recomputes live from CFG.rows (js/data.js) filtered to
-// that cohort. See js/slide-data/09-market-sentiment.data.js's header
-// comment for the full methodology (what's real Excel data vs. the
-// placeholder pricing/underwriting assumptions the workbook has no
-// column for).
-//
-// Architecture: unlike every other migrated slide, there is NO Python
-// exporter for this one's cohort-dependent numbers. CFG.rows is already
-// the Excel-pipeline-derived, 363-row dataset (Round 73) and is available
-// client-side, so filtering/aggregating it per dropdown selection happens
-// directly in this file at render/interaction time — regenerating a data
-// file on every dropdown change isn't possible (this deck is static
-// `file://` HTML) and isn't needed (the aggregation is cheap: at most a
-// few hundred row-filters over an array of 363). Only the fixed styling
-// copy and the placeholder pricing methodology constants live in
-// MARKET_SENTIMENT_DATA now — everything cohort-specific is computed
-// below.
-//
-// THE CHART FORMULA (unchanged from Round 42/49, still the "challenge"
-// the user flagged directly back then): see computeSellVsHoldSeries()
-// below for the full smootherstep-interpolation reasoning, preserved
-// as-is. What's new in Round 83 is that its 4 inputs (currentMultiple,
-// expectedTVPI, reinvestRate, fundEndYear) are now themselves computed
-// per cohort instead of hardcoded — see msBuildSellVsHold().
-//
-// SMOOTH UPDATES: switching either dropdown does NOT re-render the whole
-// slide. msApplySelection() updates the range bar's fill/marker positions
-// via CSS `transition` (see css/styles.css's .msRangeFill/.msMarker
-// rules) so they visibly slide to their new position/width, and calls
-// the existing ApexCharts instance's `updateOptions()` (not
-// destroy+recreate) so the 3 curves, axis scale, and endpoint pills
-// animate to their new values using the chart library's own transition —
-// the same "real chart, not a picture" bar this slide's Round 42 build
-// had to clear.
-//
-// chrome-page stays "08" (deck position unchanged by this round).
+// Market Sentiment — hardcoded strategy + vintage combos from the source
+// slides (js/slide-data/09-market-sentiment.data.js). Settings drawer
+// picks a combo; the slide updates in place.
 
 const MS_TAG_STYLES = {
   favourable: { bg: '#e3f3e9', text: '#1f6b4a', label: 'Favourable' },
@@ -69,137 +28,52 @@ function msShouldPlay(){
   return !marketSentimentPlayed && !reduce;
 }
 
-// ---- Cohort computation (CFG.rows -> this slide's numbers) ----
-// See js/slide-data/09-market-sentiment.data.js's header comment for the
-// full methodology and what is/isn't real Excel data.
-
 function msTagColorWord(tagKey) {
   return tagKey === 'favourable' ? 'green' : (tagKey === 'unfavourable' ? 'red' : 'yellow');
 }
 
-// Returns the first band whose `max` exceeds value (bands sorted
-// ascending, last band's max is Infinity) — matches the "<" convention
-// CFG.rows' own *_segment fields already use (tools/export_cfg_rows.py).
-function msBandFor(value, bands) {
-  for (let i = 0; i < bands.length; i++) { if (value < bands[i].max) return bands[i]; }
-  return bands[bands.length - 1];
-}
-
-function msFilterRows(strategy, vintageKey) {
-  return CFG.rows.filter(function (r) { return r.strategy === strategy && r.vintage_segment === vintageKey; });
-}
-
-// Sum-then-derive, never average a ratio (same convention as
-// js/app.js's weightedMetrics() and every Python exporter in this deck).
-function msWeightedCohortMetrics(rows) {
-  let paid = 0, nav = 0, dist = 0, totalValue = 0, commitment = 0, unfunded = 0, wVintageNum = 0;
-  for (let i = 0; i < rows.length; i++) {
-    const d = rows[i];
-    paid += d.paid; nav += d.nav; dist += d.dist; totalValue += d.total_value;
-    commitment += d.commitment_revised; unfunded += d.unfunded;
-    wVintageNum += d.vintage * d.commitment_revised;
-  }
-  return {
-    n: rows.length, nav: nav, paid: paid, dist: dist, unfunded: unfunded, commitment: commitment,
-    dpi: paid ? dist / paid : 0,
-    rvpi: paid ? nav / paid : 0,
-    tvpi: paid ? totalValue / paid : 0,
-    unfundedPct: commitment ? unfunded / commitment : 0,
-    wVintage: commitment ? wVintageNum / commitment : null
-  };
-}
-
-function msComputeCohort(strategy, vintageKey) {
-  const rows = msFilterRows(strategy, vintageKey);
-  if (!rows.length) throw new Error('msComputeCohort: no CFG.rows for strategy=' + strategy + ' vintage_segment=' + vintageKey);
-  return msWeightedCohortMetrics(rows);
-}
-
-function msVintageCountsForStrategy(strategy) {
-  const counts = {};
-  MARKET_SENTIMENT_DATA.vintageSegments.forEach(function (v) { counts[v.key] = 0; });
-  for (let i = 0; i < CFG.rows.length; i++) {
-    const r = CFG.rows[i];
-    if (r.strategy === strategy && counts.hasOwnProperty(r.vintage_segment)) counts[r.vintage_segment]++;
-  }
-  return counts;
+function msGetCohort(strategy, vintageKey) {
+  const byStrat = MARKET_SENTIMENT_DATA.cohorts[strategy];
+  return byStrat ? byStrat[vintageKey] : null;
 }
 
 function msAvailableVintageSegments(strategy) {
-  const counts = msVintageCountsForStrategy(strategy);
-  return MARKET_SENTIMENT_DATA.vintageSegments
-    .filter(function (v) { return counts[v.key] > 0; })
-    .map(function (v) { return Object.assign({}, v, { n: counts[v.key] }); });
+  const byStrat = MARKET_SENTIMENT_DATA.cohorts[strategy] || {};
+  return Object.keys(byStrat).map(function (key) {
+    return { key: key, label: key, n: 1 };
+  });
 }
 
-// Keeps `preferredKey` if it's valid for the (possibly just-changed)
-// strategy; otherwise falls back to whichever available vintage band has
-// the most underlying funds, as the most representative default view.
 function msPickVintage(strategy, preferredKey) {
   const avail = msAvailableVintageSegments(strategy);
-  if (!avail.length) throw new Error('msPickVintage: no vintage data at all for strategy ' + strategy);
-  const match = avail.filter(function (v) { return v.key === preferredKey; })[0];
-  if (match) return match.key;
-  return avail.slice().sort(function (a, b) { return b.n - a.n; })[0].key;
+  if (!avail.length) return MARKET_SENTIMENT_DATA.defaultVintageSegment;
+  if (avail.some(function (v) { return v.key === preferredKey; })) return preferredKey;
+  if (preferredKey === 'Pre-2016' && avail.some(function (v) { return v.key === 'Pre-2015'; })) return 'Pre-2015';
+  if (preferredKey === 'Pre-2015' && avail.some(function (v) { return v.key === 'Pre-2016'; })) return 'Pre-2016';
+  return avail[0].key;
 }
 
-function msBuildBandDriver(column, row, label, numericValue, valueText, bands) {
-  const band = msBandFor(numericValue, bands);
-  const activeIndex = bands.indexOf(band);
+function msBuildTaggedDriver(column, row, label, valueText, tagKey, bands, activeIndex, segmentWidth) {
   const segments = bands.map(function (b) { return { label: b.label, color: msTagColorWord(b.tagKey) }; });
   return {
-    column: column, row: row, label: label, value: valueText, tagKey: band.tagKey,
-    segmentWidth: 133, segments: segments, activeIndex: activeIndex,
+    column: column, row: row, label: label, value: valueText, tagKey: tagKey,
+    segmentWidth: segmentWidth, segments: segments, activeIndex: activeIndex,
     markerFraction: (activeIndex + 0.5) / segments.length
   };
 }
 
-// The vintage driver's tag/marker is derived from the SELECTED vintage
-// band directly, not by re-bucketing the computed weighted-average value
-// — mathematically identical (a cohort filtered to one vintage band's
-// weighted average can only ever fall inside that same band) and it can
-// never drift out of sync with the dropdown. See the data file's
-// "VINTAGE-BAND FAVOURABILITY" comment for why this also fixes a real
-// bug the pre-Round-74 static file had.
-function msBuildVintageDriver(vintageKey, wVintage) {
-  const D = MARKET_SENTIMENT_DATA;
-  const activeIndex = D.vintageSegments.findIndex(function (v) { return v.key === vintageKey; });
-  const segments = D.vintageSegments.map(function (v) { return { label: v.label, color: msTagColorWord(v.tagKey) }; });
-  const tagKey = D.vintageSegments[activeIndex].tagKey;
-  const valueText = wVintage != null ? String(Math.round(wVintage)) : '—';
-  return {
-    column: 'left', row: 0, label: 'Weighted Avg Vintage', value: valueText, tagKey: tagKey,
-    segmentWidth: 78, segments: segments, activeIndex: activeIndex,
-    markerFraction: (activeIndex + 0.5) / segments.length
-  };
-}
-
-function msBuildDrivers(cohort, vintageKey) {
+function msBuildDrivers(c) {
   const D = MARKET_SENTIMENT_DATA;
   return [
-    msBuildVintageDriver(vintageKey, cohort.wVintage),
-    msBuildBandDriver('right', 0, 'Unfunded (%)', cohort.unfundedPct, (cohort.unfundedPct * 100).toFixed(1) + '%', D.unfundedBands),
-    msBuildBandDriver('left', 1, 'DPI', cohort.dpi, cohort.dpi.toFixed(2) + 'x', D.dpiBands),
-    msBuildBandDriver('right', 1, 'TVPI', cohort.tvpi, cohort.tvpi.toFixed(2) + 'x', D.tvpiBands)
+    msBuildTaggedDriver('left', 0, 'Weighted Avg Vintage', String(c.vintageYear), c.vintageTag, D.vintageScale, c.vintageBand, 78),
+    msBuildTaggedDriver('right', 0, 'Unfunded (%)', c.unfunded.toFixed(1) + '%', c.unfundedTag, D.unfundedBands, c.unfundedBand, 133),
+    msBuildTaggedDriver('left', 1, 'DPI', c.dpi.toFixed(2) + 'x', c.dpiTag, D.dpiBands, c.dpiBand, 133),
+    msBuildTaggedDriver('right', 1, 'TVPI', c.tvpi.toFixed(2) + 'x', c.tvpiTag, D.tvpiBands, c.tvpiBand, 133)
   ];
 }
 
-function msScoreFromDrivers(drivers) {
-  const scoreOf = { favourable: 1, moderate: 0, unfavourable: -1 };
-  return drivers.reduce(function (s, d) { return s + scoreOf[d.tagKey]; }, 0);
-}
-
-function msPricingFromScore(score, navDollars) {
-  const D = MARKET_SENTIMENT_DATA;
-  const band = D.pricingScoreTable.filter(function (b) { return score >= b.minScore; })[0];
-  const navM = navDollars / 1e6;
-  return {
-    rangeLow: band.rangeLow, rangeHigh: band.rangeHigh,
-    rangeDisplay: band.rangeLow + ' – ' + band.rangeHigh + '%',
-    netSaleProceedsLow: Math.round(navM * band.rangeLow / 100),
-    netSaleProceedsHigh: Math.round(navM * band.rangeHigh / 100),
-    discountLow: band.discountLow, discountHigh: band.discountHigh
-  };
+function msFormatProceeds(n) {
+  return '$' + Number(n).toLocaleString('en-US') + 'M';
 }
 
 // Ken Perlin's "nicenum"-style axis rounding: picks a human-friendly tick
@@ -223,25 +97,17 @@ function msNiceAxis(minVal, maxVal, targetTicks) {
   return ticks;
 }
 
-function msBuildSellVsHold(cohort, pricing) {
+function msBuildSellVsHold(c) {
   const D = MARKET_SENTIMENT_DATA;
-  const currentMultiple = cohort.tvpi;
-  const expectedTVPI = currentMultiple * D.tvpiUpliftFactor;
+  const currentMultiple = c.tvpi;
+  const expectedTVPI = c.expectedTVPI;
   const reinvestRate = D.reinvestRateDefault;
-  const discountLow = pricing.discountLow / 100;
-  const discountHigh = pricing.discountHigh / 100;
+  const discountLow = c.discountLow / 100;
+  const discountHigh = c.discountHigh / 100;
   const todayYear = D.todayYear;
   const transactionYear = todayYear + D.transactionLagYears;
-  const roundedVintage = cohort.wVintage != null ? Math.round(cohort.wVintage) : transactionYear;
-  const fundEndYear = Math.max(transactionYear + D.minHorizonYears, roundedVintage + D.fundLifeYears);
-  const years = fundEndYear - transactionYear;
-  const growthFactor = Math.pow(1 + reinvestRate, years);
-  const endpoints = {
-    hold: expectedTVPI,
-    sell10: currentMultiple * (1 - discountLow) * growthFactor,
-    sell25: currentMultiple * (1 - discountHigh) * growthFactor
-  };
-  const allVals = [currentMultiple, endpoints.hold, endpoints.sell10, endpoints.sell25];
+  const fundEndYear = c.fundEndYear;
+  const allVals = [currentMultiple, c.holdEnd, c.sellLowEnd, c.sellHighEnd];
   const rawMin = Math.min.apply(null, allVals);
   const rawMax = Math.max.apply(null, allVals);
   const pad = (rawMax - rawMin) * 0.08 || 0.05;
@@ -251,37 +117,39 @@ function msBuildSellVsHold(cohort, pricing) {
     todayYear: todayYear, transactionYear: transactionYear, fundEndYear: fundEndYear,
     currentMultiple: currentMultiple, expectedTVPI: expectedTVPI, reinvestRate: reinvestRate,
     discountLow: discountLow, discountHigh: discountHigh,
+    holdEnd: c.holdEnd, sellLowEnd: c.sellLowEnd, sellHighEnd: c.sellHighEnd,
     yAxisGridlines: yAxisGridlines,
     legend: [
       Object.assign({}, D.sellVsHold.legend[0]),
-      Object.assign({}, D.sellVsHold.legend[1], { label: 'Sell at ' + Math.round(pricing.discountLow) + '%' }),
-      Object.assign({}, D.sellVsHold.legend[2], { label: 'Sell at ' + Math.round(pricing.discountHigh) + '%' })
+      Object.assign({}, D.sellVsHold.legend[1], { label: 'Sell at ' + c.discountLow + '%' }),
+      Object.assign({}, D.sellVsHold.legend[2], { label: 'Sell at ' + c.discountHigh + '%' })
     ],
     filters: [
       { label: 'Fund end date', value: String(fundEndYear) },
       { label: 'Expected TVPI', value: expectedTVPI.toFixed(2) + 'x' },
       { label: 'Reinvestment rate', value: (reinvestRate * 100).toFixed(1) + '% p.a.' },
-      { label: 'Discount', value: Math.round(pricing.discountLow) + '% – ' + Math.round(pricing.discountHigh) + '%' }
+      { label: 'Discount', value: c.discountLow + '% – ' + c.discountHigh + '%' }
     ]
   });
 }
 
 function msComposeSlideData(strategy, vintageKey) {
   const D = MARKET_SENTIMENT_DATA;
-  const cohort = msComputeCohort(strategy, vintageKey);
-  const drivers = msBuildDrivers(cohort, vintageKey);
-  const score = msScoreFromDrivers(drivers);
-  const pricingBase = msPricingFromScore(score, cohort.nav);
-  const sellVsHold = msBuildSellVsHold(cohort, pricingBase);
-  const vintageMeta = D.vintageSegments.filter(function (v) { return v.key === vintageKey; })[0];
-  const vintageLabel = vintageMeta ? vintageMeta.label : vintageKey;
-  const strategyLabel = D.strategyDisplayLabels[strategy] || strategy;
-
+  const c = msGetCohort(strategy, vintageKey);
+  if (!c) throw new Error('No hardcoded cohort for ' + strategy + ' / ' + vintageKey);
+  const drivers = msBuildDrivers(c);
+  const pricingBase = {
+    rangeLow: c.rangeLow, rangeHigh: c.rangeHigh,
+    rangeDisplay: c.rangeLow + ' – ' + c.rangeHigh + '%',
+    netSaleProceedsLow: c.proceedsLow,
+    netSaleProceedsHigh: c.proceedsHigh,
+    discountLow: c.discountLow, discountHigh: c.discountHigh
+  };
   return {
-    strategy: strategy, vintageKey: vintageKey, n: cohort.n,
-    subtitleText: strategyLabel + ', ' + vintageLabel,
+    strategy: strategy, vintageKey: vintageKey,
+    subtitleText: (D.strategyDisplayLabels[strategy] || strategy) + ', ' + vintageKey,
     pricing: Object.assign({}, D.pricing, pricingBase, { drivers: drivers }),
-    sellVsHold: sellVsHold
+    sellVsHold: msBuildSellVsHold(c)
   };
 }
 
@@ -293,25 +161,14 @@ let msState = { strategy: MARKET_SENTIMENT_DATA.defaultStrategy, vintageSegment:
 // workbook change), fall back to whatever real combination has the most
 // underlying funds, rather than throwing on first render.
 function msEnsureValidState() {
-  try {
-    msComputeCohort(msState.strategy, msState.vintageSegment);
-    return;
-  } catch (e) { /* fall through to auto-pick below */ }
-  let best = null;
-  MARKET_SENTIMENT_DATA.strategies.forEach(function (s) {
-    msAvailableVintageSegments(s).forEach(function (v) {
-      if (!best || v.n > best.n) best = { strategy: s, vintageSegment: v.key, n: v.n };
-    });
-  });
-  if (best) { msState = { strategy: best.strategy, vintageSegment: best.vintageSegment }; }
+  if (msGetCohort(msState.strategy, msState.vintageSegment)) return;
+  const s = MARKET_SENTIMENT_DATA.defaultStrategy;
+  msState = { strategy: s, vintageSegment: msPickVintage(s, MARKET_SENTIMENT_DATA.defaultVintageSegment) };
 }
 
 function msSubtitleText() {
   const D = MARKET_SENTIMENT_DATA;
-  const vintageMeta = D.vintageSegments.filter(function (v) { return v.key === msState.vintageSegment; })[0];
-  const strategyLabel = D.strategyDisplayLabels[msState.strategy] || msState.strategy;
-  const vintageLabel = vintageMeta ? vintageMeta.label : msState.vintageSegment;
-  return strategyLabel + ', ' + vintageLabel;
+  return (D.strategyDisplayLabels[msState.strategy] || msState.strategy) + ', ' + msState.vintageSegment;
 }
 
 function msTitleBarHtml() {
@@ -418,7 +275,7 @@ function msRenderPricingPanel(P) {
   '\n  <div class="fig-text" data-fig-name="range-suffix" style="position:absolute;left:310.00px;top:446.00px;width:184.00px;height:21.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:17.00px;line-height:21.42px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + P.rangeSuffix + '</div>' +
   '\n  <div class="fig-box" data-fig-name="range-bar-track" style="position:absolute;left:68.00px;top:490.00px;width:832.00px;height:10.00px;background:#e7eae8;border-radius:5px;box-sizing:border-box;"></div>' +
   '\n  <div id="msRangeFill" class="fig-box msRangeFill" data-fig-name="range-bar-fill" style="position:absolute;left:' + fillLeft.toFixed(2) + 'px;top:490.00px;width:' + fillWidth.toFixed(2) + 'px;height:10.00px;background:#1b6749;border-radius:5px;box-sizing:border-box;"></div>' +
-  '\n  <div id="msNetSaleProceeds" class="fig-text" data-fig-name="net-sale-proceeds" style="position:absolute;left:68.00px;top:516.00px;width:832.00px;height:23.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-style:normal;font-size:18.00px;line-height:22.68px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">Net Sale Proceeds:  $' + P.netSaleProceedsLow + P.netSaleProceedsUnit + ' – $' + P.netSaleProceedsHigh + P.netSaleProceedsUnit + '</div>' +
+  '\n  <div id="msNetSaleProceeds" class="fig-text" data-fig-name="net-sale-proceeds" style="position:absolute;left:68.00px;top:516.00px;width:832.00px;height:23.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-style:normal;font-size:18.00px;line-height:22.68px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">Net Sale Proceeds:  ' + msFormatProceeds(P.netSaleProceedsLow) + ' – ' + msFormatProceeds(P.netSaleProceedsHigh) + '</div>' +
   '\n  <div id="msDiscountNote" class="fig-text" data-fig-name="discount-note" style="position:absolute;left:68.00px;top:544.00px;width:832.00px;height:18.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:17.64px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + P.discountLow + '% – ' + P.discountHigh + '% discount to NAV</div>' +
   '\n  <div class="fig-box" data-fig-name="rule" style="position:absolute;left:68.00px;top:576.00px;width:832.00px;height:1.00px;background:#e2e6e3;"></div>' +
   '\n  <div class="fig-text" data-fig-name="drivers-heading" style="position:absolute;left:68.00px;top:596.00px;width:832.00px;height:28.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-style:normal;font-size:22.00px;line-height:27.72px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">' + P.driversHeading + '</div>' +
@@ -473,9 +330,9 @@ function msSmootherstep(t) {
 
 function computeSellVsHoldSeries(S) {
   const endpoints = {
-    hold: S.expectedTVPI,
-    sell10: S.currentMultiple * (1 - S.discountLow) * Math.pow(1 + S.reinvestRate, S.fundEndYear - S.transactionYear),
-    sell25: S.currentMultiple * (1 - S.discountHigh) * Math.pow(1 + S.reinvestRate, S.fundEndYear - S.transactionYear)
+    hold: S.holdEnd != null ? S.holdEnd : S.expectedTVPI,
+    sell10: S.sellLowEnd != null ? S.sellLowEnd : S.currentMultiple * (1 - S.discountLow) * Math.pow(1 + S.reinvestRate, S.fundEndYear - S.transactionYear),
+    sell25: S.sellHighEnd != null ? S.sellHighEnd : S.currentMultiple * (1 - S.discountHigh) * Math.pow(1 + S.reinvestRate, S.fundEndYear - S.transactionYear)
   };
   function buildSeries(endValue) {
     const years = [S.todayYear, S.transactionYear];
@@ -613,7 +470,7 @@ function msApplySelection() {
   const rangeFill = document.getElementById('msRangeFill');
   if (rangeFill) { rangeFill.style.left = fillLeft.toFixed(2) + 'px'; rangeFill.style.width = fillWidth.toFixed(2) + 'px'; }
   const netSale = document.getElementById('msNetSaleProceeds');
-  if (netSale) netSale.textContent = 'Net Sale Proceeds:  $' + P.netSaleProceedsLow + P.netSaleProceedsUnit + ' – $' + P.netSaleProceedsHigh + P.netSaleProceedsUnit;
+  if (netSale) netSale.textContent = 'Net Sale Proceeds:  ' + msFormatProceeds(P.netSaleProceedsLow) + ' – ' + msFormatProceeds(P.netSaleProceedsHigh);
   const discountNote = document.getElementById('msDiscountNote');
   if (discountNote) discountNote.textContent = P.discountLow + '% – ' + P.discountHigh + '% discount to NAV';
 

@@ -2,6 +2,14 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Market Sentiment hardcoded
+
+- Stopped computing this slide from Excel.
+- 19 strategy + vintage combos copied from the source slides.
+- Settings drawer only lists combos we have.
+
+**Files:** `js/slide-data/09-market-sentiment.data.js`, `js/pages/09-market-sentiment.js`, `README.md`.
+
 ## 2026-08-28 — Routes subtitle type
 
 - Slide 03 subtitle matches Deep Dive (footer 08): 19px, regular, `#808582`.

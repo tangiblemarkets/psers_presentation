@@ -245,7 +245,7 @@ function showSlide(n){
   if(wrap)clearSlideGhosts(wrap);
   const direction=(!hasShownSlide||slide===prevSlide)?null:(slide>prevSlide?'next':'prev');
   let outgoingGhost=null;
-  if(wrap&&direction&&!prefersReducedMotion()&&canvasEl){
+  if(wrap&&direction&&!prefersReducedMotion()&&canvasEl&&!deckExporting){
     outgoingGhost=canvasEl.cloneNode(true);
     outgoingGhost.removeAttribute('id');
     outgoingGhost.className=(canvasEl.className+' slideGhost').trim();
@@ -416,6 +416,10 @@ function setupOptionsMenu(){
   if(!btn)return;
   btn.addEventListener('click',ev=>{ev.stopPropagation();toggleOptionsMenu()});
   $('#menuFullscreen').addEventListener('click',()=>{toggleFullscreen();closeOptionsMenu()});
+  const expCur=$('#menuExportCurrent');
+  if(expCur)expCur.addEventListener('click',()=>{closeOptionsMenu();exportCurrentSlidePdf()});
+  const expAll=$('#menuExportAll');
+  if(expAll)expAll.addEventListener('click',()=>{closeOptionsMenu();exportAllSlidesPdf()});
   document.addEventListener('click',ev=>{const menu=$('#optionsMenu');if(menu&&!menu.contains(ev.target))closeOptionsMenu()});
   document.addEventListener('fullscreenchange',updateFullscreenLabel);
   updateFullscreenLabel();
@@ -458,6 +462,6 @@ $('#slideHtmlCanvas').addEventListener('keydown',e=>{
 if(typeof ResizeObserver!=='undefined'){
   new ResizeObserver(syncSlideCanvasScale).observe($('#slideWrap'));
 }
-showSlide(Number((location.hash.match(/slide=(\d+)/)||[])[1])||1);$('#prev').onclick=()=>showSlide(slide-1);$('#next').onclick=()=>showSlide(slide+1);setupOptionsMenu();$('#drawerOverlay').addEventListener('click',closeDrawer);$('#drawerClose').onclick=closeDrawer;$('#drawerBack').onclick=drawerBack;$('#modalClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});$('#slideWrap').addEventListener('wheel',e=>{if(e.target.closest('.holdScrollBody'))return;if(!$('#modal').classList.contains('open')&&!$('#drawer').classList.contains('open'))e.preventDefault()},{passive:false});document.addEventListener('keydown',e=>{const modal=$('#modal').classList.contains('open'),drawer=$('#drawer').classList.contains('open'),menuList=$('#menuList'),menu=!!(menuList&&menuList.classList.contains('open'));if(e.key==='Escape'){if(modal)closeModal();else if(drawer)closeDrawer();else if(menu)closeOptionsMenu();return}const typing=e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);if(typing)return;if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(slide+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(slide-1)}else if(e.key.toLowerCase()==='d'&&!modal){openHoldings()}})}
+showSlide(Number((location.hash.match(/slide=(\d+)/)||[])[1])||1);$('#prev').onclick=()=>showSlide(slide-1);$('#next').onclick=()=>showSlide(slide+1);setupOptionsMenu();$('#drawerOverlay').addEventListener('click',closeDrawer);$('#drawerClose').onclick=closeDrawer;$('#drawerBack').onclick=drawerBack;$('#modalClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});$('#slideWrap').addEventListener('wheel',e=>{if(e.target.closest('.holdScrollBody'))return;if(!$('#modal').classList.contains('open')&&!$('#drawer').classList.contains('open'))e.preventDefault()},{passive:false});document.addEventListener('keydown',e=>{const modal=$('#modal').classList.contains('open'),drawer=$('#drawer').classList.contains('open'),menuList=$('#menuList'),menu=!!(menuList&&menuList.classList.contains('open'));if(deckExporting){e.preventDefault();return}if(e.key==='Escape'){if(modal)closeModal();else if(drawer)closeDrawer();else if(menu)closeOptionsMenu();return}const typing=e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);if(typing)return;if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(slide+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(slide-1)}else if(e.key.toLowerCase()==='d'&&!modal){openHoldings()}})}
 
 try{init()}catch(err){console.error(err);document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;inset:20px;background:#fff;color:#0e4b37;z-index:9999;padding:24px;font-family:Arial;border:1px solid #ddd">'+t('error.load')+'</div>')}

@@ -15,6 +15,8 @@ I18N.register('en', {
     moreOptions: 'More options',
     fullscreen: 'Fullscreen',
     exitFullscreen: 'Exit Fullscreen',
+    exportCurrent: 'Export current',
+    exportAll: 'Export all',
     slideFallback: 'Slide',
     back: 'Back',
     close: 'Close'

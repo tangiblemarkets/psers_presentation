@@ -258,10 +258,12 @@
 .menuBtn:hover{background:rgba(255,255,255,.9);box-shadow:0 0 0 .5px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.08)}
 .menuBtn:active{transform:scale(.92)}
 .menuBtn[aria-expanded="true"]{background:#fff;color:var(--green)}
-.menuList{position:absolute;top:42px;right:0;min-width:184px;background:rgba(255,255,255,.94);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06);padding:6px;opacity:0;visibility:hidden;transform:scale(.9) translateY(-6px);transform-origin:top right;transition:opacity .16s ease,transform .16s cubic-bezier(.19,1,.22,1),visibility 0s linear .16s}
+.menuList{position:absolute;top:42px;right:0;min-width:210px;background:rgba(255,255,255,.94);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06);padding:6px;opacity:0;visibility:hidden;transform:scale(.9) translateY(-6px);transform-origin:top right;transition:opacity .16s ease,transform .16s cubic-bezier(.19,1,.22,1),visibility 0s linear .16s}
 .menuList.open{opacity:1;visibility:visible;transform:scale(1) translateY(0);transition:opacity .16s ease,transform .16s cubic-bezier(.19,1,.22,1),visibility 0s linear 0s}
 .menuItem{appearance:none;border:none;background:transparent;width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;color:rgba(10,20,15,.82);cursor:pointer;text-align:left;transition:background .12s ease}
 .menuItem:hover{background:rgba(14,75,55,.09)}
+.menuItem[disabled]{opacity:.45;pointer-events:none}
+.menuSep{height:1px;background:rgba(0,0,0,.08);margin:5px 8px}
 .menuItem svg{flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;opacity:.72}
 #slideHtmlCanvas [data-count-to]{font-variant-numeric:tabular-nums}
 .menuBtn:focus{outline:none}
@@ -872,3 +874,12 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
   transition:border-color .2s ease;
 }
 .sddTitleSelect:hover,.sddTitleSelect:focus{border-bottom-color:#104130}
+
+.exportOverlay{position:fixed;inset:0;z-index:10050;background:rgba(13,43,31,.55);display:flex;align-items:center;justify-content:center}
+.exportOverlay[hidden]{display:none!important}
+.exportCard{background:#0d2b1f;color:#fff;border-radius:12px;padding:22px 28px;min-width:240px;display:flex;align-items:center;gap:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:500;box-shadow:0 18px 48px rgba(0,0,0,.28)}
+.exportSpin{width:18px;height:18px;border:2px solid rgba(255,255,255,.22);border-top-color:var(--accent,#c9b896);border-radius:50%;animation:exportSpin .7s linear infinite;flex:none}
+@keyframes exportSpin{to{transform:rotate(360deg)}}
+body.deck-exporting #navrow,body.deck-exporting .optionsMenu{visibility:hidden!important}
+body.deck-exporting .fig-hotspot{display:none!important}
+body.deck-exporting .slideWrap *,body.deck-exporting .slideWrap *::before,body.deck-exporting .slideWrap *::after{animation:none!important;transition:none!important}

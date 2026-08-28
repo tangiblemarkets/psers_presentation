@@ -19,7 +19,7 @@ Do not add another numbers file.
 ## Present
 
 - Arrow keys or the bottom dots
-- Menu → Fullscreen
+- Menu → Export current, Export all, Fullscreen
 - Cover TOC jumps to a slide
 - Charts and tables open the side drawer
 - Holdings: search, filter, PDF
@@ -34,7 +34,8 @@ Do not add another numbers file.
 | `js/data.js` | Deck titles + `CFG.rows` (from Excel) |
 | `js/app.js` | Nav, drawers, modal |
 | `css/styles.css` | All styling |
-| `js/vendor/` | ApexCharts (local) |
+| `js/vendor/` | ApexCharts, html2canvas, jsPDF (local) |
+| `js/export-deck.js` | Menu PDF export (current page / all pages) |
 | `assets/` | Fonts + About logos |
 | `source-data/` | The Excel workbook |
 | `tools/` | `python3 tools/export.py` |

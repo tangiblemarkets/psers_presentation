@@ -2,6 +2,14 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Export current / Export all
+
+- Menu has **Export current** (this page) and **Export all** (every page).
+- PDF is a picture of the live slides, so sorts, filters, and dropdowns stay.
+- Export all then returns to the page you were on.
+
+**Files:** `js/export-deck.js`, `js/vendor/html2canvas.min.js`, `js/vendor/jspdf.umd.min.js`, `index.html`, `js/app.js`, `css/styles.css`, `js/i18n/en.js`, `README.md`.
+
 ## 2026-08-28 — Strategy Mix Total = Portfolio source data
 
 - Total NAV and the strategy table title open the same **Portfolio source data** drawer as the right-side click.

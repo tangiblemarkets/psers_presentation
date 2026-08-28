@@ -26,6 +26,15 @@
       <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
     </button>
     <div id="menuList" class="menuList" role="menu" aria-hidden="true">
+      <button type="button" class="menuItem" id="menuExportCurrent" role="menuitem">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 4v10"/><path d="M8 10l4 4 4-4"/><path d="M5 18h14"/></svg>
+        <span data-i18n="chrome.exportCurrent">Export current</span>
+      </button>
+      <button type="button" class="menuItem" id="menuExportAll" role="menuitem">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M12 4v10"/><path d="M8 10l4 4 4-4"/><path d="M5 18h14"/><path d="M19 8V4H5v4"/></svg>
+        <span data-i18n="chrome.exportAll">Export all</span>
+      </button>
+      <div class="menuSep" role="separator"></div>
       <button type="button" class="menuItem" id="menuFullscreen" role="menuitem">
         <svg viewBox="0 0 24 24" width="15" height="15"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M21 16v5h-5"/></svg>
         <span data-i18n="chrome.fullscreen">Fullscreen</span>
@@ -42,6 +51,12 @@
 <!-- Hover tooltip for Strategy Mix donut / Deep Dive bars. position:fixed
      so it is not clipped by a scaled slide. -->
 <div id="donutTip" class="donutTip"></div>
+<div id="exportOverlay" class="exportOverlay" hidden aria-hidden="true">
+  <div class="exportCard">
+    <div class="exportSpin" aria-hidden="true"></div>
+    <div id="exportProgressText">Exporting…</div>
+  </div>
+</div>
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/en.js"></script>
 <script src="js/data.js"></script>
@@ -69,6 +84,9 @@
 <script src="js/pages/16-portfolio-holdings.js"></script>
 <script src="js/pages/17-tangible-contact.js"></script>
 <script src="js/pages/18-disclaimer.js"></script>
+<script src="js/vendor/html2canvas.min.js"></script>
+<script src="js/vendor/jspdf.umd.min.js"></script>
+<script src="js/export-deck.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

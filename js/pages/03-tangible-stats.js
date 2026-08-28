@@ -100,7 +100,7 @@ function runCountUp(group){
   const nodes = Array.from(document.querySelectorAll('#slideHtmlCanvas [data-count-to]'));
   if (!nodes.length) return;
   const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  if (reduce || countUpPlayed[group]){
+  if (reduce || countUpPlayed[group] || deckExporting){
     snapCountUp(nodes);
     return;
   }

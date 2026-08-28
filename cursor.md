@@ -2,6 +2,30 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Windows About slide export
+
+- Logo PNG is inlined (`js/slide-data/02-about-tangible-logos.js`) so Windows `file://` does not fetch it during PDF capture.
+- Capture replaces `<img>` with a CSS background. That was crashing Export current on About Tangible and leaving later Export all pages empty.
+- Fallback pages no longer print the slide title in the middle.
+
+**Files:** `js/export-deck.js`, `js/slide-data/02-about-tangible-logos.js`, `index.html`, `README.md`.
+
+## 2026-08-28 — Windows Export all
+
+- html2canvas clone iframe is on-screen (Windows was skipping `left:-10000px`).
+- Unknown CSS colors (`oklch` / `lab`) no longer crash the export.
+- Each page retries at a lower scale; a failed page is skipped so the PDF still saves.
+- Canvas memory is released after each page.
+
+**Files:** `js/export-deck.js`, `js/vendor/html2canvas.min.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Sort menu click-outside
+
+- Click anywhere outside the sort control closes it.
+- Escape closes the menu first, then the drawer.
+
+**Files:** `js/app.js`, `css/styles.css`, `README.md`.
+
 ## 2026-08-28 — Market Sentiment two pick buttons
 
 - Removed the title gear.

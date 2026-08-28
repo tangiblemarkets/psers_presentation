@@ -840,12 +840,15 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
   background:#163528;border:1px solid rgba(255,255,255,.16);
   box-shadow:0 14px 32px rgba(0,0,0,.4);padding:4px 0
 }
+.lensSortMenu[hidden]{display:none!important}
 .lensSortOpt{
   display:block;width:100%;border:0;background:transparent;color:#f5f5f0;
   text-align:left;padding:8px 12px;font-family:inherit;font-size:11px;font-weight:300;cursor:pointer
 }
 .lensSortOpt:hover,.lensSortOpt.is-on{background:rgba(255,255,255,.08)}
 
+.deckExportHost{position:fixed;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:#fff;z-index:3;pointer-events:none}
+body.deck-exporting .deckExportHost,body.deck-exporting .deckExportHost *{animation:none!important;transition:none!important}
 .exportOverlay{position:fixed;inset:0;z-index:10050;background:rgba(13,43,31,.55);display:flex;align-items:center;justify-content:center}
 .exportOverlay[hidden]{display:none!important}
 .exportCard{background:#0d2b1f;color:#fff;border-radius:12px;padding:22px 28px;min-width:240px;display:flex;align-items:center;gap:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:500;box-shadow:0 18px 48px rgba(0,0,0,.28)}

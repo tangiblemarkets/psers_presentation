@@ -402,10 +402,17 @@ function openVintageView(){const segments=['Pre-2013','2013-2015','2016-2018','2
 // <button class="menuItem" role="menuitem"> to #menuList in index.html,
 // then wire its click handler here alongside menuFullscreen's, following
 // the same "run the action, then closeOptionsMenu()" pattern.
-// Hide the 3-dot menu whenever the drawer or modal is open, so it doesn't
-// float on top of a popup. Toggled via body.popup-open (same pattern as the
-// existing body.on-cover). Called from openDrawer/closeDrawer/openModal/closeModal.
 function syncOptionsMenuVisibility(){const anyOpen=$('#drawer').classList.contains('open')||$('#modal').classList.contains('open');document.body.classList.toggle('popup-open',anyOpen);if(anyOpen)closeOptionsMenu()}
+function closeLensSortMenus(){
+  document.querySelectorAll('.lensSortMenu').forEach(function (el) { el.hidden = true; });
+}
+function setupLensSortOutside(){
+  document.addEventListener('pointerdown', function (ev) {
+    const wrap = ev.target && ev.target.closest && ev.target.closest('.lensSort');
+    if (wrap) return;
+    closeLensSortMenus();
+  }, true);
+}
 function closeOptionsMenu(){const list=$('#menuList'),btn=$('#menuBtn');if(!list||!btn)return;list.classList.remove('open');list.setAttribute('aria-hidden','true');btn.setAttribute('aria-expanded','false')}
 function toggleOptionsMenu(){const list=$('#menuList'),btn=$('#menuBtn');if(!list||!btn)return;const willOpen=!list.classList.contains('open');list.classList.toggle('open',willOpen);list.setAttribute('aria-hidden',String(!willOpen));btn.setAttribute('aria-expanded',String(willOpen))}
 async function toggleFullscreen(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}}
@@ -461,6 +468,6 @@ $('#slideHtmlCanvas').addEventListener('keydown',e=>{
 if(typeof ResizeObserver!=='undefined'){
   new ResizeObserver(syncSlideCanvasScale).observe($('#slideWrap'));
 }
-showSlide(Number((location.hash.match(/slide=(\d+)/)||[])[1])||1);$('#prev').onclick=()=>showSlide(slide-1);$('#next').onclick=()=>showSlide(slide+1);setupOptionsMenu();$('#drawerOverlay').addEventListener('click',closeDrawer);$('#drawerClose').onclick=closeDrawer;$('#drawerBack').onclick=drawerBack;$('#modalClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});$('#slideWrap').addEventListener('wheel',e=>{if(e.target.closest('.holdScrollBody'))return;if(!$('#modal').classList.contains('open')&&!$('#drawer').classList.contains('open'))e.preventDefault()},{passive:false});document.addEventListener('keydown',e=>{const modal=$('#modal').classList.contains('open'),drawer=$('#drawer').classList.contains('open'),menuList=$('#menuList'),menu=!!(menuList&&menuList.classList.contains('open'));if(deckExporting){e.preventDefault();return}if(e.key==='Escape'){if(modal)closeModal();else if(drawer)closeDrawer();else if(menu)closeOptionsMenu();return}const typing=e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);if(typing)return;if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(slide+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(slide-1)}else if(e.key.toLowerCase()==='d'&&!modal){openHoldings()}})}
+showSlide(Number((location.hash.match(/slide=(\d+)/)||[])[1])||1);$('#prev').onclick=()=>showSlide(slide-1);$('#next').onclick=()=>showSlide(slide+1);setupOptionsMenu();setupLensSortOutside();$('#drawerOverlay').addEventListener('click',closeDrawer);$('#drawerClose').onclick=closeDrawer;$('#drawerBack').onclick=drawerBack;$('#modalClose').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target===$('#modal'))closeModal()});$('#slideWrap').addEventListener('wheel',e=>{if(e.target.closest('.holdScrollBody'))return;if(!$('#modal').classList.contains('open')&&!$('#drawer').classList.contains('open'))e.preventDefault()},{passive:false});document.addEventListener('keydown',e=>{const modal=$('#modal').classList.contains('open'),drawer=$('#drawer').classList.contains('open'),menuList=$('#menuList'),menu=!!(menuList&&menuList.classList.contains('open')),sortOpen=document.querySelector('.lensSortMenu:not([hidden])');if(deckExporting){e.preventDefault();return}if(e.key==='Escape'){if(sortOpen){closeLensSortMenus();return}if(modal)closeModal();else if(drawer)closeDrawer();else if(menu)closeOptionsMenu();return}const typing=e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);if(typing)return;if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();showSlide(slide+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();showSlide(slide-1)}else if(e.key.toLowerCase()==='d'&&!modal){openHoldings()}})}
 
 try{init()}catch(err){console.error(err);document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;inset:20px;background:#fff;color:#0e4b37;z-index:9999;padding:24px;font-family:Arial;border:1px solid #ddd">'+t('error.load')+'</div>')}

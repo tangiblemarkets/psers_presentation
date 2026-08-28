@@ -176,6 +176,7 @@
 .lensKpis-5 .lensKpi:nth-child(-n+2){grid-column:span 3}
 .lensKpis-5 .lensKpi:nth-child(n+3){grid-column:span 2}
 .lensKpis-4{grid-template-columns:repeat(4,1fr)!important}
+.lensKpis-5eq{grid-template-columns:repeat(5,1fr)!important}
 .lensGroup:first-child{border-top:1px solid rgba(255,255,255,.06)}
 .lensFundsFlat .fundRow:first-child{border-top:1px solid rgba(255,255,255,.06)}
 .lensManager{padding:12px 0!important}
@@ -209,6 +210,8 @@
 .modal.open{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .22s ease,visibility 0s linear 0s}
 .modalCard{transform:scale(.96) translateY(6px);transition:transform .28s cubic-bezier(.19,1,.22,1)}
 .modal.open .modalCard{transform:scale(1) translateY(0)}
+.modalCard.modalCard-compact{width:min(520px,92vw);height:auto;max-height:min(680px,88vh)}
+.modalCard.modalCard-compact .modalBody{flex:0 1 auto}
 
 /* Close ("x") buttons on the drawer and modal — bigger hit target, a
    clearer circular shape, and a small hover/press animation so each one
@@ -440,12 +443,11 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .fig-hotspot{cursor:pointer}
 .fig-hotspot::before{content:"";position:absolute;inset:0;border-radius:4px;border:1px solid transparent;transition:border-color .16s ease,background .16s ease}
 .fig-hotspot:hover::before{border-color:rgba(14,75,55,.22);background:rgba(47,122,91,.028)}
-.coverTocRow{cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box}
+.coverTocRow{cursor:pointer;z-index:2;display:flex;align-items:center;box-sizing:border-box}
 .coverTocRow--line{border-bottom:0.75px solid #2d5f4b}
 .coverTocRow:hover{background:rgba(245,245,240,.06)}
 .coverTocRow:focus-visible{outline:1px solid rgba(245,245,240,.35);outline-offset:-1px}
 .coverTocLabel{font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:17.88px;line-height:22.53px;color:#e1ebe4;white-space:pre}
-.coverTocNum{font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-size:16.65px;line-height:22.53px;color:#96ac9e}
 
 /* Sortable holdings tables — clickable headers + right-side search.
    bindSortableTable() in js/app.js is the shared logic; these styles
@@ -530,13 +532,16 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .kcPoint .kcEm{font-weight:600;color:inherit}
 .kcSummary{flex:1;min-width:0;box-sizing:border-box;padding:24px 28px 26px;background:#f5f5f5;border-radius:16px;cursor:pointer;display:flex;flex-direction:column;outline:none;transition:box-shadow .16s ease,background .16s ease}
 .kcSummary:hover,.kcSummary:focus{background:#f0f0f0;box-shadow:0 0 0 1px rgba(16,65,48,.16)}
-.kcSummaryHead{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:500;line-height:1.2;color:#5E5E5E;margin:0 0 18px}
+.kcSummaryHead{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:500;line-height:1.2;color:#5E5E5E;margin:0 0 18px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.kcSummaryHint{font-size:15px;font-weight:500;color:#15553F;line-height:1.2}
 .kcCards{display:grid;grid-template-columns:1fr 1fr;gap:38px;flex:1;min-height:0}
 .kcCard{background:#fff;border:1px solid #dee4df;border-radius:12px;padding:28px 26px 24px;display:flex;flex-direction:column;justify-content:center}
 .kcCardVal{font-family:'Plus Jakarta Sans',sans-serif;font-size:48px;font-weight:500;line-height:1.05;letter-spacing:-0.4px;color:#104130}
 .kcCardLbl{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:400;line-height:22px;color:#787878;margin-top:10px}
-.kcRatios{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:22px;padding:4px 4px 0}
-.kcRatioVal{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:500;line-height:1.1;color:#104130}
+.kcRatios{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:22px;padding:4px 4px 0}
+.kcRatio{padding:0 16px;border-left:1px solid #dee4df}
+.kcRatio:first-child{padding-left:0;border-left:0}
+.kcRatioVal{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:500;line-height:1.1;color:#0f0f0f}
 .kcRatioLbl{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:400;line-height:20px;color:#787878;margin-top:8px}
 
 /* Portfolio Holdings slide (added right before Contact): a real, sortable,
@@ -820,7 +825,8 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .sddStratBtn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:12px;margin:0;padding:6px 16px 6px 18px;border:0;border-radius:10px;background:#f5f5f5;color:#104130;font:inherit;font-weight:500;line-height:1.15;cursor:pointer;flex:none}
 .sddStratBtn:hover{background:#ececec}
 .sddStratBtnIcon{flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.msPickRow{display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:32px;color:#104130}
+.msPickRow{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:500;color:#104130}
+#msTitleBar .msPickBtn{font-size:22px}
 .sddStratList{margin:0}
 .sddStratPick{cursor:pointer}
 .sddStratPick.is-on .val{color:var(--accent)}

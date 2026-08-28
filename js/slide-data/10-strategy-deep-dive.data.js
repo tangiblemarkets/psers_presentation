@@ -11,7 +11,7 @@
 // for that strategy — computeStrategyDeepDiveData() below, called by
 // js/pages/10-strategy-deep-dive.js at render/interaction time, not
 // eagerly at file-load time (there's no single "the" data anymore, now
-// that there are 5 possible strategies). The LEFT side's 3 narrative
+// that there are 4 possible strategies). The LEFT side's 3 narrative
 // points are a different matter entirely — see "NARRATIVE CONTENT" below
 // and js/slide-data/10-strategy-deep-dive-narratives.data.js.
 //
@@ -20,33 +20,23 @@
 // mcDisplayName() and MANAGER_CONCENTRATION_DATA.totalNav. It must
 // also load after 10-strategy-deep-dive-narratives.data.js.
 //
-// SDD_STRATEGIES — the 5 dropdown options and each one's CFG.rows
+// SDD_STRATEGIES — the 4 dropdown options and each one's CFG.rows
 // `tier1` filter. `tier1` is CFG.rows' finest-grained taxonomy (11
-// distinct values); this groups it back up to the same 5-way split as
-// every other slide's `strategy` field, with one deliberate exception:
-// 'private-equity' combines `strategy` values 'Buyout' and 'Special
-// Situations' into one bucket, because that's how this slide's very
-// first version (Round 58) was designed and verified against the Figma
-// mockup — `tier1 in ('Buyout', 'PE Special Situations')` is the only
-// filter that reproduces that mockup's manager count EXACTLY (49), and
-// changing that grouping now would silently change a slide the user has
-// already reviewed and approved. Every other key maps 1:1 to CFG.rows'
-// own `strategy` value's tier1 members (confirmed against every row —
-// each `strategy` value's tier1 members never straddle two `strategy`
-// buckets except Buyout/Special Situations' own split into Private
-// Equity here):
-//   Real Estate       -> Real Estate Partnership, Real Estate
-//                         Co-Investment, Direct Real Estate
-//   Credit             -> Private Credit Partnership, Private Credit
+// distinct values). Private Equity combines Buyout + Special Situations
+// (Figma mockup manager count of 49). Real Estate and Infrastructure
+// are one option: this slide treats them as a single sleeve.
+//   Real Estate and Infrastructure -> Real Estate Partnership,
+//                         Real Estate Co-Investment, Direct Real Estate,
+//                         Infrastructure Partnership, Infrastructure
 //                         Co-Investment
-//   Infrastructure     -> Infrastructure Partnership, Infrastructure
+//   Credit             -> Private Credit Partnership, Private Credit
 //                         Co-Investment
 //   Growth & Venture   -> Venture Capital, Growth Equity
 const SDD_STRATEGIES = [
   { key: 'private-equity', label: 'Private Equity',    tier1Keys: ['Buyout', 'PE Special Situations'] },
-  { key: 'real-estate',    label: 'Real Estate',        tier1Keys: ['Real Estate Partnership', 'Real Estate Co-Investment', 'Direct Real Estate'] },
+  { key: 'real-estate-infra', label: 'Real Estate and Infrastructure', navLabel: 'RE & Infra NAV',
+    tier1Keys: ['Real Estate Partnership', 'Real Estate Co-Investment', 'Direct Real Estate', 'Infrastructure Partnership', 'Infrastructure Co-Investment'] },
   { key: 'credit',         label: 'Private Credit',     tier1Keys: ['Private Credit Partnership', 'Private Credit Co-Investment'] },
-  { key: 'infrastructure', label: 'Infrastructure',     tier1Keys: ['Infrastructure Partnership', 'Infrastructure Co-Investment'] },
   { key: 'growth-venture', label: 'Growth & Venture',   tier1Keys: ['Venture Capital', 'Growth Equity'] }
 ];
 
@@ -183,6 +173,7 @@ function computeStrategyDeepDiveData(strategyConfig) {
   return {
     strategyKey: strategyConfig.key,
     strategyLabel: strategyConfig.label,
+    navLabel: strategyConfig.navLabel || (strategyConfig.label.toLowerCase() + ' NAV'),
     rows: rows,
     strategyNav: strategyNav,
     pctOfTotalNav: totalPortfolioNav > 0 ? strategyNav / totalPortfolioNav * 100 : 0,

@@ -175,7 +175,7 @@ function computeManagerConcentrationCallouts(D) {
 
   return {
     note1: mcPluralize(seg3.count, 'manager') + ' have already returned more than three-quarters of what was drawn down',
-    note2: 'The $' + (seg1.nav / 1e9).toFixed(1) + 'bn sitting with low-DPI GPs is largely young vintages still in their investment period',
+    note2: 'The $' + (seg1.nav / 1e9).toFixed(1) + 'bn sitting with low-DPI GPs is largely young vintages still early in their investment period',
     stat1Value: '~' + Math.round(top1.pct) + '%',
     stat1Label: 'of total NAV sits with the largest manager',
     stat1Detail: top1.displayName + ' is ' + top1.pct.toFixed(1) + '% of the book, with ' + vehiclesWord +

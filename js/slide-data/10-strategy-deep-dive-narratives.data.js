@@ -5,36 +5,35 @@
 // Deliberately a SEPARATE file from 10-strategy-deep-dive.data.js: every
 // number in that file is computed live from CFG.rows (Excel-derived);
 // this file is pure authored prose with NO source anywhere in the
-// workbook. Real Estate and Infrastructure share one authored sleeve
-// (the "Real Estate & Infrastructure" design).
+// workbook. Real Estate and Infrastructure share one authored sleeve.
 const SDD_RE_INFRA_NARRATIVE = {
-  subtitle: 'Real Estate has already paid back more than it holds while Infrastructure has barely begun distributing, so the two sit at opposite ends of their life',
+  subtitle: 'Real Estate discounts reflect valuation uncertainty and limited comparable sales, while Infrastructure supports stronger pricing',
   points: [
     {
       title: 'Real estate’s 1.13x DPI shifts the focus to whether the remaining assets generate cash or still require refinancing or development',
       body: 'Historical distributions provide a proven track record, but buyers will price asset by asset and their path to exit. Assets with current income, manageable leverage and recent valuation support attract strong bids, while positions dependent on leasing, refinancing or completing the business plan face wider discounts.'
     },
     {
-      title: '51% sits with Stockbridge, Blackstone and Brookfield',
-      body: 'These are the three deepest relationships in the sleeve, so selling all three as a block would effectively end them. Carving out individual vintages within each manager raises meaningful proceeds and keeps the relationships intact. Our buyer base has shown active interest in Blackstone vehicles, so the demand is there to work with.'
+      title: 'Infrastructure remains early in its investment life, with nearly half of NAV invested across the 2022–2026 vintages',
+      body: 'The portfolio has returned 0.28x DPI, consistent with its younger profile. Buyers will assess how far the underlying assets have progressed toward stable cash generation and how much capital is still required.'
     },
     {
       title: 'The three largest manager exposures provide a reliable way to test the market',
-      body: 'Stockbridge, Blackstone and Brookfield account for half of these segments. Carving out selected funds or vintages within each manager can generate meaningful proceeds while preserving the broader relationships. Tangible has seen active buyer interest in Blackstone vehicles, so selected vintages can test pricing without selling the sleeve as a block.'
+      body: 'Stockbridge, Blackstone and Brookfield account for half of these segments. Carving out selected funds or vintages within each manager can generate meaningful proceeds while preserving the broader relationships. Tangible has seen active buyer interest in Blackstone vehicles.'
     }
   ]
 };
 
 const SDD_STRATEGY_NARRATIVES = {
   'private-equity': {
-    subtitle: 'The scale and diversification of the PE portfolio creates multiple paths to liquidity, depending on PSERS’ objectives',
+    subtitle: 'The scale and diversification of the PE portfolio creates multiple paths to liquidity, and depends on PSERS’ objectives',
     points: [
       {
         title: 'Buyer demand favors the 2019–2021 positions, while the pre-2016 tail will require specialised investors',
-        body: 'Pricing will be driven by the quality and concentration of the remaining assets, current marks compared to the market and expected exits. The 2019-2021 vintages will be the sweet spot for secondary buyers as they are seasoned enough to underwrite, with meaningful value still to be realised.'
+        body: 'Pricing will be driven by the quality and concentration of the remaining assets, current marks compared to the market and expected exits. The 2019–2021 vintages will be the sweet spot for secondary buyers as they are seasoned enough to underwrite, with meaningful value still to be realised.'
       },
       {
-        title: 'Each fund will be priced based on the quality of the remaining portfolio rather than its historical performance',
+        title: 'Each fund will be priced based on the quality of the remaining portfolio rather than headline performance',
         body: 'Headline fund metrics provide a starting point, but secondary pricing will be driven by underlying asset performance, leverage, valuations compared to current market and expected realisations.'
       },
       {
@@ -45,7 +44,7 @@ const SDD_STRATEGY_NARRATIVES = {
   },
 
   'credit': {
-    subtitle: 'Credit pricing is driven by bottom-up underwriting, with buyers looking through the loan tapes and underlying assets rather than fund-level metrics.',
+    subtitle: 'Credit pricing is driven by bottom-up underwriting, with buyers focusing on the loan tapes and underlying assets rather than fund-level metrics',
     points: [
       {
         title: '$3.6bn invested with managers Tangible’s buyer base actively tracks',
@@ -62,23 +61,22 @@ const SDD_STRATEGY_NARRATIVES = {
     ]
   },
 
-  'real-estate': SDD_RE_INFRA_NARRATIVE,
-  'infrastructure': SDD_RE_INFRA_NARRATIVE,
+  'real-estate-infra': SDD_RE_INFRA_NARRATIVE,
 
   'growth-venture': {
-    subtitle: 'VC buyers are underwriting on an underlying asset basis, targeting specific companies they like and the funds that hold them.',
+    subtitle: 'Pricing will be driven by asset mix, with AI-linked exposure attracting stronger demand and broader SaaS facing greater discount pressure',
     points: [
       {
-        title: '84% of the sleeve is in the software-led technology vintages',
-        body: 'The 2019–2021 funds bought software at peak valuations. Whether those companies keep pace with AI adoption is the judgement a buyer is making, and it is why marks from this vintage are treated with more scepticism than elsewhere. Low DPI is normal in venture, but alongside unproven marks it widens the spread of bids rather than lowering all of them.'
+        title: 'Software accounts for 84% of NAV, but pricing will diverge between AI-linked and broader SaaS exposure',
+        body: 'The market is selective. AI-linked assets continue to attract stronger demand and higher pricing, while broader SaaS and non-AI growth exposure face discount pressure amid weaker public comparables and slower exit activity. This divergence is directly impacting discount levels.'
       },
       {
-        title: '55% of the sleeve is 2019 or later, sitting at 0.24x DPI',
-        body: 'Pricing is bifurcated rather than uniform: funds holding identifiable, underwritable assets can attract NAV-level pricing, while the rest is likely to take a blanket discount. With just 0.24x DPI vs. 1.33x for pre-2019 funds, asset quality will be a key driver of the outcome.'
+        title: 'The 2019–2021 vintages have peak-cycle entry valuations with limited realisations',
+        body: 'With nearly half of Growth & VC NAV, the portfolio was largely invested in 2019–2021, at peak valuation levels, and have returned only 0.28x DPI. Buyers will test current marks against company performance since entry, with recent financings and visible exit paths supporting tighter pricing.'
       },
       {
-        title: '40% of NAV is concentrated in 2 managers',
-        body: '23% of the sleeve is spread across ten Insight funds, with materially different performance profiles across vintages. We have also seen significant volatility in secondary pricing for these funds, so buyers are likely to underwrite each position on its own merits rather than apply a uniform discount to the Insight exposure.'
+        title: 'Manager quality supports demand, but does not protect weaker funds from wider discounts',
+        body: 'Insight and LLR account for 40% of NAV and benefit from broad market coverage. Tangible has seen significant volatility in secondary pricing for these funds, with buyers underwriting each position on its own merits rather than apply a uniform discount to the Insight exposure.'
       }
     ]
   }

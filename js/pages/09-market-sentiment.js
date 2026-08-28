@@ -1,6 +1,8 @@
-// Market Sentiment — hardcoded strategy + vintage combos from the source
-// slides (js/slide-data/09-market-sentiment.data.js). Settings drawer
-// picks a combo; the slide updates in place.
+// Market Sentiment — strategy + vintage combos stay hardcoded
+// (js/slide-data/09-market-sentiment.data.js): pricing range, proceeds,
+// Sell vs Hold. Settings drawer picks a combo; the slide updates in place.
+// Live from CFG.rows for that combo only: TOTAL NAV and the four Pricing
+// Drivers (weighted vintage, unfunded %, DPI, TVPI).
 
 const MS_TAG_STYLES = {
   favourable: { bg: '#e3f3e9', text: '#1f6b4a', label: 'Favourable' },
@@ -51,6 +53,69 @@ function msPickVintage(strategy, preferredKey) {
   if (preferredKey === 'Pre-2016' && avail.some(function (v) { return v.key === 'Pre-2015'; })) return 'Pre-2015';
   if (preferredKey === 'Pre-2015' && avail.some(function (v) { return v.key === 'Pre-2016'; })) return 'Pre-2016';
   return avail[0].key;
+}
+
+function msVintageMatches(year, vintageKey) {
+  if (vintageKey === '2022+') return year >= 2022;
+  if (vintageKey === '2019-2021') return year >= 2019 && year <= 2021;
+  if (vintageKey === '2016-2018') return year >= 2016 && year <= 2018;
+  if (vintageKey === 'Pre-2016') return year < 2016;
+  if (vintageKey === 'Pre-2015') return year < 2015;
+  return false;
+}
+
+function msVintageBandIndex(year) {
+  if (year <= 2012) return 0;
+  if (year <= 2015) return 1;
+  if (year <= 2018) return 2;
+  if (year <= 2021) return 3;
+  return 4;
+}
+
+function msLiveDrivers(strategy, vintageKey) {
+  const D = MARKET_SENTIMENT_DATA;
+  const rows = (CFG.rows || []).filter(function (r) {
+    if ((r.slideStrategy || r.strategy) !== strategy) return false;
+    return msVintageMatches(Number(r.vintage) || 0, vintageKey);
+  });
+  let nav = 0, paid = 0, dist = 0, unfunded = 0, commitment = 0, vintageNav = 0;
+  rows.forEach(function (r) {
+    const n = Number(r.nav) || 0;
+    nav += n;
+    paid += Number(r.paid) || 0;
+    dist += Number(r.dist) || 0;
+    unfunded += Number(r.unfunded) || 0;
+    commitment += Number(r.commitment) || 0;
+    vintageNav += (Number(r.vintage) || 0) * n;
+  });
+  const vintageYear = nav ? Math.round(vintageNav / nav) : 0;
+  const vintageBand = msVintageBandIndex(vintageYear);
+  const uPct = unfundedPct(unfunded, commitment);
+  const uBand = uPct < 0.15 ? 0 : (uPct < 0.30 ? 1 : 2);
+  const dpi = paid ? dist / paid : 0;
+  const dpiBand = dpi < 0.25 ? 0 : (dpi < 0.75 ? 1 : 2);
+  const tvpi = paid ? (nav + dist) / paid : 0;
+  const tvpiBand = tvpi < 1.2 ? 0 : (tvpi < 1.7 ? 1 : 2);
+  return {
+    vintageYear: vintageYear,
+    vintageTag: D.vintageScale[vintageBand].tagKey,
+    vintageBand: vintageBand,
+    unfunded: uPct * 100,
+    unfundedTag: D.unfundedBands[uBand].tagKey,
+    unfundedBand: uBand,
+    dpi: dpi,
+    dpiTag: D.dpiBands[dpiBand].tagKey,
+    dpiBand: dpiBand,
+    tvpi: tvpi,
+    tvpiTag: D.tvpiBands[tvpiBand].tagKey,
+    tvpiBand: tvpiBand,
+    totalNav: nav
+  };
+}
+
+function msFormatTotalNav(nav) {
+  const m = Math.round((Number(nav) || 0) / 1e6);
+  return 'TOTAL NAV: $' + m.toLocaleString('en-US') + 'M';
 }
 
 function msBuildTaggedDriver(column, row, label, valueText, tagKey, bands, activeIndex, segmentWidth) {
@@ -137,13 +202,15 @@ function msComposeSlideData(strategy, vintageKey) {
   const D = MARKET_SENTIMENT_DATA;
   const c = msGetCohort(strategy, vintageKey);
   if (!c) throw new Error('No hardcoded cohort for ' + strategy + ' / ' + vintageKey);
-  const drivers = msBuildDrivers(c);
+  const live = msLiveDrivers(strategy, vintageKey);
+  const drivers = msBuildDrivers(live);
   const pricingBase = {
     rangeLow: c.rangeLow, rangeHigh: c.rangeHigh,
     rangeDisplay: c.rangeLow + ' – ' + c.rangeHigh + '%',
     netSaleProceedsLow: c.proceedsLow,
     netSaleProceedsHigh: c.proceedsHigh,
-    discountLow: c.discountLow, discountHigh: c.discountHigh
+    discountLow: c.discountLow, discountHigh: c.discountHigh,
+    totalNavText: msFormatTotalNav(live.totalNav)
   };
   return {
     strategy: strategy, vintageKey: vintageKey,
@@ -183,15 +250,12 @@ function msPickBtnHtml(id, label) {
 }
 
 function msTitleBarHtml() {
-  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1700px;height:55px;display:flex;align-items:center;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
-    '<span>' + esc(MARKET_SENTIMENT_DATA.title) + '</span>' +
-    '</div>';
-}
-
-function msSubtitleHtml() {
-  return '\n  <div id="msSubtitle" class="msPickRow" style="position:absolute;left:68px;top:196px;width:1550px;height:56px;">' +
-    msPickBtnHtml('msStrategyLabel', msStrategyLabel()) +
-    msPickBtnHtml('msVintageLabel', msState.vintageSegment) +
+  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1784px;height:55px;display:flex;align-items:center;gap:14px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
+    '<span>' + esc(MARKET_SENTIMENT_DATA.title) + ':</span>' +
+    '<span class="msPickRow">' +
+      msPickBtnHtml('msStrategyLabel', msStrategyLabel()) +
+      msPickBtnHtml('msVintageLabel', msState.vintageSegment) +
+    '</span>' +
     '</div>';
 }
 
@@ -236,7 +300,7 @@ function msRefreshSettingsDrawer() {
 }
 
 function openMsSettingsDrawer() {
-  openDrawer('Choose view', 'The slide updates when you pick one', msSettingsBodyHtml());
+  openDrawer('Choose view', 'The slide updates upon selection', msSettingsBodyHtml());
   msBindSettingsDrawer();
 }
 
@@ -287,7 +351,7 @@ function msRenderPricingPanel(P) {
   '\n  <div class="fig-box" data-fig-name="range-bar-track" style="position:absolute;left:68.00px;top:490.00px;width:832.00px;height:10.00px;background:#e7eae8;border-radius:5px;box-sizing:border-box;"></div>' +
   '\n  <div id="msRangeFill" class="fig-box msRangeFill" data-fig-name="range-bar-fill" style="position:absolute;left:' + fillLeft.toFixed(2) + 'px;top:490.00px;width:' + fillWidth.toFixed(2) + 'px;height:10.00px;background:#1b6749;border-radius:5px;box-sizing:border-box;"></div>' +
   '\n  <div id="msNetSaleProceeds" class="fig-text" data-fig-name="net-sale-proceeds" style="position:absolute;left:68.00px;top:516.00px;width:832.00px;height:23.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-style:normal;font-size:18.00px;line-height:22.68px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">Net Sale Proceeds:  ' + msFormatProceeds(P.netSaleProceedsLow) + ' – ' + msFormatProceeds(P.netSaleProceedsHigh) + '</div>' +
-  '\n  <div id="msDiscountNote" class="fig-text" data-fig-name="discount-note" style="position:absolute;left:68.00px;top:544.00px;width:832.00px;height:18.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:17.64px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + P.discountLow + '% – ' + P.discountHigh + '% discount to NAV</div>' +
+  '\n  <div id="msDiscountNote" class="fig-text" data-fig-name="discount-note" style="position:absolute;left:68.00px;top:544.00px;width:832.00px;height:18.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:17.64px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + P.totalNavText + '</div>' +
   '\n  <div class="fig-box" data-fig-name="rule" style="position:absolute;left:68.00px;top:576.00px;width:832.00px;height:1.00px;background:#e2e6e3;"></div>' +
   '\n  <div class="fig-text" data-fig-name="drivers-heading" style="position:absolute;left:68.00px;top:596.00px;width:832.00px;height:28.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-style:normal;font-size:22.00px;line-height:27.72px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">' + P.driversHeading + '</div>' +
   '\n  <div class="fig-text" data-fig-name="drivers-subheading" style="position:absolute;left:68.00px;top:626.00px;width:832.00px;height:19.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:13.00px;line-height:19.00px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + P.driversSubheading + '</div>' + driversHtml;
@@ -320,10 +384,9 @@ function renderMarketSentimentSlide() {
   '\n  <div class="fig-box" data-fig-name="chrome-logo-box" style="position:absolute;left:1675.00px;top:58.00px;width:177.00px;height:44.00px;border:1px solid #0f0f0f;box-sizing:border-box;"></div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-logo" style="position:absolute;left:1677.00px;top:69.00px;width:177.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:5.00px;color:#0f0f0f;text-align:center;white-space:pre;">TANGIBLE</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-footer" style="position:absolute;left:68.00px;top:982.00px;width:112.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:left;white-space:pre;">Confidential</div>' +
-  '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:right;white-space:pre;">07</div>' +
+  '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:right;white-space:pre;">08</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-footer-note" style="position:absolute;left:219.00px;top:982.00px;width:954.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:18.00px;letter-spacing:0.00px;color:#787878;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;">' + D.footnote + '</div>' +
   msTitleBarHtml() +
-  msSubtitleHtml() +
   '\n  <div class="fig-box" data-fig-name="panel-divider" style="position:absolute;left:956.00px;top:296.00px;width:1.00px;height:600.00px;background:#e2e6e3;"></div>' +
   '\n  <div id="msPricingPanel">' + pricingHtml + '</div>' +
   '\n  <div id="msSellVsHoldPanel">' + sellVsHoldHtml + '</div>' +
@@ -485,7 +548,7 @@ function msApplySelection() {
   const netSale = document.getElementById('msNetSaleProceeds');
   if (netSale) netSale.textContent = 'Net Sale Proceeds:  ' + msFormatProceeds(P.netSaleProceedsLow) + ' – ' + msFormatProceeds(P.netSaleProceedsHigh);
   const discountNote = document.getElementById('msDiscountNote');
-  if (discountNote) discountNote.textContent = P.discountLow + '% – ' + P.discountHigh + '% discount to NAV';
+  if (discountNote) discountNote.textContent = P.totalNavText;
 
   P.drivers.forEach(function (d, i) {
     const valueEl = document.getElementById('msDriverValue' + i);

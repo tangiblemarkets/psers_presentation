@@ -67,9 +67,9 @@ const BOP_NOTES = [
   { x: BOP_RIGHT_X, y: 464.87, h: 83,
     lead: 'Data source and reference date.',
     body: 'Figures are derived from position level portfolio data provided by the client and are stated as at the reference date shown. No independent verification of the underlying data has been performed.' },
-  { x: BOP_RIGHT_X, y: 550.10, h: 83,
-    lead: 'Capital called in excess of commitment.',
-    body: 'Where paid-in capital exceeds stated commitment and gross and net figures are not separately disclosed, the position is treated as fully called. Unfunded commitments are stated gross unless noted otherwise.' }
+  { x: BOP_RIGHT_X, y: 550.10, h: 140,
+    lead: 'Unfunded commitment.',
+    body: 'Unfunded percentage is calculated as unfunded commitment divided by total commitment. Where paid-in capital exceeds stated commitment but an unfunded amount remains, the reported unfunded commitment is retained for consistency. Unfunded commitments are stated gross unless noted otherwise.' }
 ];
 
 function bopNoteHtml(n, i){

@@ -40,7 +40,10 @@ function computeKeyConsiderations(){
   const windowWord = words[Math.max(0, Math.min(10, Math.round(windowPct / 10)))];
   const below1 = nav ? rows.filter(r => (r.tvpi || 0) < 1).reduce((s, r) => s + (r.nav || 0), 0) / nav * 100 : 0;
   const below1r = Math.round(below1 * 10) / 10;
-  const calledPct = commitment ? Math.round(paid / commitment * 100) : 0;
+  const unfunded = rows.reduce((s, r) => s + (r.unfunded || 0), 0);
+  const unfundedFrac = unfundedPct(unfunded, commitment);
+  const unfundedPctDisp = (unfundedFrac * 100).toFixed(1);
+  const fundedRough = Math.round((1 - unfundedFrac) * 10) * 10;
   const avgGp = gpCount ? Math.round(nav / 1e6 / gpCount) : 0;
   return {
     stats: {
@@ -48,14 +51,13 @@ function computeKeyConsiderations(){
       aggregateNavBn: Math.round(nav / 1e9 * 10) / 10,
       distinctPositions: n,
       gpRelationships: gpCount,
-      calledPct: calledPct,
-      calledBn: Math.round(paid / 1e9 * 10) / 10,
+      unfundedPct: unfundedPctDisp,
       dpi: dpi,
       rvpi: rvpi,
       tvpi: tvpi
     },
     points: [
-      {num:'01', text:'The portfolio has almost fully paid back its investors at ' + dpi.toFixed(2) + 'x DPI and is ' + calledPct + '% funded, a combination that suits secondary buyers'},
+      {num:'01', text:'The portfolio has almost fully paid back its investors at ' + dpi.toFixed(2) + 'x DPI and is ~' + fundedRough + '% funded, a combination that suits secondary buyers'},
       {num:'02', text:'Avg GP exposure is c.$' + avgGp + 'M, with no manager at more than ' + maxMgrCeil + '% of NAV. The portfolio scale and diversification supports broad buyer interest without creating outsized single-manager concentration'},
       {num:'03', text: windowWord + ' in every ten dollars of NAV sit in the 2016 – 2021 vintages, the window most secondary buyers target outside VC & growth'},
       {num:'04', text:'Only ' + below1r + '% of NAV is held in positions currently below a 1.0x TVPI, supporting a narrower bid-ask spread at a portfolio level'},
@@ -116,7 +118,7 @@ function renderKeyConsiderationsSlide(){
   <div class="kcList">${pointsHtml}
   </div>
   <div class="kcSummary" data-action="portfolioSummary" role="button" tabindex="0" title="Open full portfolio source metrics" aria-label="Open portfolio source data">
-    <div class="kcSummaryHead">Portfolio Summary</div>
+    <div class="kcSummaryHead">Portfolio Summary <span class="kcSummaryHint">&gt; Click data to expand</span></div>
     <div class="kcCards">
       <div class="kcCard"><div class="kcCardVal" data-count-to="${commitBn}" data-count-from="22" data-count-prefix="~$" data-count-suffix="bn">~$${commitBn}bn</div><div class="kcCardLbl">Total Commitment*</div></div>
       <div class="kcCard"><div class="kcCardVal" data-count-to="${navBn}" data-count-from="0" data-count-prefix="~$" data-count-suffix="bn">~$${navBn}bn</div><div class="kcCardLbl">Total NAV*</div></div>
@@ -124,7 +126,7 @@ function renderKeyConsiderationsSlide(){
       <div class="kcCard"><div class="kcCardVal" data-count-to="${D.stats.gpRelationships}" data-count-from="41">${D.stats.gpRelationships}</div><div class="kcCardLbl">GP relationships</div></div>
     </div>
     <div class="kcRatios">
-      <div class="kcRatio"><div class="kcRatioVal">${D.stats.calledPct}%</div><div class="kcRatioLbl">Called, $${D.stats.calledBn}bn</div></div>
+      <div class="kcRatio"><div class="kcRatioVal">${D.stats.unfundedPct}%</div><div class="kcRatioLbl">Unfunded</div></div>
       <div class="kcRatio"><div class="kcRatioVal">${D.stats.dpi.toFixed(2)}x</div><div class="kcRatioLbl">DPI</div></div>
       <div class="kcRatio"><div class="kcRatioVal">${D.stats.rvpi.toFixed(2)}x</div><div class="kcRatioLbl">RVPI</div></div>
       <div class="kcRatio"><div class="kcRatioVal">${D.stats.tvpi.toFixed(2)}x</div><div class="kcRatioLbl">TVPI</div></div>

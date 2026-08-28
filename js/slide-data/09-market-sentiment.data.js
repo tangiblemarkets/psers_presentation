@@ -1,5 +1,6 @@
-// Hardcoded Market Sentiment cohorts. Numbers come from the source
-// slides, not from Excel. Add or change a combo here.
+// Hardcoded Market Sentiment cohorts. Pricing range, proceeds, and
+// Sell vs Hold come from the source slides. Pricing Drivers + TOTAL NAV
+// are computed live from CFG.rows for the same strategy/vintage combo.
 
 const MARKET_SENTIMENT_DATA = {
   title: 'Market Sentiment by Strategy and Vintage',

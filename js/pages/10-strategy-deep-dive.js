@@ -237,7 +237,7 @@ function sddRenderStatRow(D) {
   const navM = Math.round(D.strategyNav / 1e6);
   const xs = [68, 514, 960, 1406];
   const pad = 32;
-  const navLabel = D.strategyLabel.toLowerCase() + ' NAV';
+  const navLabel = D.navLabel;
   // Verticals stop short of the baseline so they do not touch it.
   const dividers = [514, 960, 1406].map(function (x) {
     return '\n  <div class="fig-box" style="position:absolute;left:' + x + 'px;top:252px;width:1px;height:86px;background:#dee4df;"></div>';
@@ -282,7 +282,7 @@ function openSddStrategyDrawer() {
       '<div class="val">' + (on ? 'Current' : '') + '</div>' +
     '</div>';
   }).join('');
-  openDrawer('Choose strategy', 'The slide updates when you pick one', '<div class="sddStratList">' + body + '</div>');
+  openDrawer('Choose strategy', 'The slide updates upon selection', '<div class="sddStratList">' + body + '</div>');
   document.querySelectorAll('.sddStratPick').forEach(function (el) {
     el.addEventListener('click', function () {
       sddOnStrategyChange(el.getAttribute('data-sdd-strategy'));
@@ -393,7 +393,7 @@ function renderStrategyDeepDiveSlide() {
     '\n  <div class="fig-box" data-fig-name="chrome-logo-box" style="position:absolute;left:1675.00px;top:58.00px;width:177.00px;height:44.00px;border:1px solid #0f0f0f;box-sizing:border-box;"></div>' +
     '\n  <div class="fig-text" data-fig-name="chrome-logo" style="position:absolute;left:1677.00px;top:69.00px;width:177.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19.00px;line-height:23.94px;letter-spacing:5.00px;color:#0f0f0f;text-align:center;white-space:pre;">TANGIBLE</div>' +
     '\n  <div class="fig-text" data-fig-name="chrome-footer" style="position:absolute;left:68.00px;top:982.00px;width:112.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19.00px;line-height:23.94px;color:#96ac9e;white-space:pre;">Confidential</div>' +
-    '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19.00px;line-height:23.94px;color:#96ac9e;text-align:right;white-space:pre;">08</div>' +
+    '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19.00px;line-height:23.94px;color:#96ac9e;text-align:right;white-space:pre;">07</div>' +
     sddTitleBarHtml() +
     sddSubtitleHtml(N) +
     sddPointsHtml(N) +
@@ -452,7 +452,7 @@ function sddApplySelection() {
   setText('sddStatNav', sddFormatUSD(D.strategyNav));
   setText('sddStatInterests', String(D.interestsCount));
   setText('sddStatManagers', String(D.managerCount));
-  setText('sddStatNavLabel', D.strategyLabel.toLowerCase() + ' NAV');
+  setText('sddStatNavLabel', D.navLabel);
 
   const tbody = document.getElementById('sddTbody');
   if (tbody) {

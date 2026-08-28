@@ -41,16 +41,17 @@
 // header/total row/chrome never re-render on a re-sort.
 
 const HOLD_COLS = [
-  {key:'fund',        label:'FUND',         type:'str', align:'left',  width:414},
-  {key:'strategy',     label:'STRATEGY',     type:'str', align:'left',  width:170},
-  {key:'commitment',   label:'COMMITMENT',   type:'num', align:'right', width:150},
-  {key:'called',       label:'CALLED',       type:'num', align:'right', width:150},
-  {key:'distributed',  label:'DISTRIBUTED',  type:'num', align:'right', width:150},
-  {key:'nav',          label:'NAV',          type:'num', align:'right', width:150},
-  {key:'totalValue',   label:'TOTAL VALUE',  type:'num', align:'right', width:150},
-  {key:'dpi',          label:'DPI',          type:'num', align:'right', width:150},
-  {key:'rvpi',         label:'RVPI',         type:'num', align:'right', width:150},
-  {key:'tvpi',         label:'TVPI',         type:'num', align:'right', width:150}
+  {key:'fund',        label:'FUND',         type:'str', align:'left',  width:390},
+  {key:'strategy',     label:'STRATEGY',     type:'str', align:'left',  width:154},
+  {key:'commitment',   label:'COMMITMENT',   type:'num', align:'right', width:138},
+  {key:'called',       label:'PAID IN',      type:'num', align:'right', width:138},
+  {key:'unfundedPct',  label:'UNFUNDED %',   type:'num', align:'right', width:134},
+  {key:'distributed',  label:'DISTRIBUTED',  type:'num', align:'right', width:138},
+  {key:'nav',          label:'NAV',          type:'num', align:'right', width:138},
+  {key:'totalValue',   label:'TOTAL VALUE',  type:'num', align:'right', width:138},
+  {key:'dpi',          label:'DPI',          type:'num', align:'right', width:138},
+  {key:'rvpi',         label:'RVPI',         type:'num', align:'right', width:138},
+  {key:'tvpi',         label:'TVPI',         type:'num', align:'right', width:140}
 ];
 
 // Green cols (dpi/rvpi/tvpi) get the accent text color per the Figma
@@ -63,7 +64,8 @@ let holdSearchQ = '';
 
 const HOLD_FILTER_NUMS = [
   {key:'commitment',  label:'Commitment',   hint:'US$ millions', phA:'e.g. 100', phB:'e.g. 400'},
-  {key:'called',      label:'Called',       hint:'US$ millions', phA:'e.g. 100', phB:'e.g. 400'},
+  {key:'called',      label:'Paid in',      hint:'US$ millions', phA:'e.g. 100', phB:'e.g. 400'},
+  {key:'unfundedPct', label:'Unfunded %',   hint:'Percent',      phA:'e.g. 15',  phB:'e.g. 40'},
   {key:'distributed', label:'Distributed',  hint:'US$ millions', phA:'e.g. 50',  phB:'e.g. 300'},
   {key:'nav',         label:'NAV',          hint:'US$ millions', phA:'e.g. 100', phB:'e.g. 300'},
   {key:'totalValue',  label:'Total value',  hint:'US$ millions', phA:'e.g. 150', phB:'e.g. 500'},
@@ -94,7 +96,7 @@ function holdNumState(key){
 
 function holdNumFromCell(v){
   if (v == null || v === '') return -Infinity;
-  const n = parseFloat(String(v).replace(/x$/i, ''));
+  const n = parseFloat(String(v).replace(/[%x]$/i, '').replace(/,/g, ''));
   return isFinite(n) ? n : -Infinity;
 }
 
@@ -105,12 +107,16 @@ function holdCellValue(col, row){
 
 function holdParseAmt(v){
   if (v == null || v === '') return 0;
-  const n = parseFloat(String(v).replace(/x$/i, '').replace(/,/g, ''));
+  const n = parseFloat(String(v).replace(/[%x]$/i, '').replace(/,/g, ''));
   return isFinite(n) ? n : 0;
 }
 
 function holdFmtAmt(n){
   return (Math.round(n * 100) / 100).toFixed(2);
+}
+
+function holdFmtPct(frac){
+  return (frac * 100).toFixed(1) + '%';
 }
 
 function holdStrategyLabel(r){
@@ -130,6 +136,9 @@ function holdFromSrc(r, i){
     strategy: holdStrategyLabel(r),
     commitment: holdFmtAmt((r.commitment || 0) / 1e6),
     called: holdFmtAmt((r.paid || 0) / 1e6),
+    unfundedPct: holdFmtPct(unfundedPct(r.unfunded, r.commitment)),
+    _unfunded: Number(r.unfunded) || 0,
+    _commitment: Number(r.commitment) || 0,
     distributed: holdFmtAmt((r.dist || 0) / 1e6),
     nav: holdFmtAmt((r.nav || 0) / 1e6),
     totalValue: holdFmtAmt((r.total_value || 0) / 1e6),
@@ -208,6 +217,8 @@ function holdVisibleRows(){
 function holdTotalFromRows(rows){
   const commitment = rows.reduce((s, r) => s + holdParseAmt(r.commitment), 0);
   const called = rows.reduce((s, r) => s + holdParseAmt(r.called), 0);
+  const unfunded = rows.reduce((s, r) => s + (r._unfunded || 0), 0);
+  const commitmentRaw = rows.reduce((s, r) => s + (r._commitment || 0), 0);
   const distributed = rows.reduce((s, r) => s + holdParseAmt(r.distributed), 0);
   const nav = rows.reduce((s, r) => s + holdParseAmt(r.nav), 0);
   const totalValue = rows.reduce((s, r) => s + holdParseAmt(r.totalValue), 0);
@@ -215,6 +226,7 @@ function holdTotalFromRows(rows){
     label: 'Grand total (' + rows.length + ' funds)',
     commitment: holdFmtAmt(commitment),
     called: holdFmtAmt(called),
+    unfundedPct: holdFmtPct(unfundedPct(unfunded, commitmentRaw)),
     distributed: holdFmtAmt(distributed),
     nav: holdFmtAmt(nav),
     totalValue: holdFmtAmt(totalValue),
@@ -268,11 +280,12 @@ function openHoldFund(i){
   const row = holdFromSrc(src, i);
   const unfunded = holdFmtAmt((src.unfunded || 0) / 1e6);
   const body =
-    '<div class="lensKpis lensKpis-4 holdFundKpis">' +
+    '<div class="lensKpis lensKpis-5eq holdFundKpis">' +
       '<div class="lensKpi"><div class="v">' + holdM(row.nav) + '</div><div class="l">NAV</div></div>' +
       '<div class="lensKpi"><div class="v">' + row.dpi + '</div><div class="l">DPI</div></div>' +
       '<div class="lensKpi"><div class="v">' + row.tvpi + '</div><div class="l">TVPI</div></div>' +
       '<div class="lensKpi"><div class="v">' + row.rvpi + '</div><div class="l">RVPI</div></div>' +
+      '<div class="lensKpi"><div class="v">' + fmtPct(unfundedPct(src.unfunded, src.commitment)) + '</div><div class="l">Unfunded %</div></div>' +
     '</div>' +
     '<div class="section">' +
       holdDetailRow('Strategy', esc(row.strategy)) +
@@ -280,7 +293,7 @@ function openHoldFund(i){
       holdDetailRow('Vintage', esc(String(src.vintage || ''))) +
       holdDetailRow('Vehicle', esc(src.vehicle || '')) +
       holdDetailRow('Commitment', holdM(row.commitment)) +
-      holdDetailRow('Called', holdM(row.called)) +
+      holdDetailRow('Paid in', holdM(row.called)) +
       holdDetailRow('Distributed', holdM(row.distributed)) +
       holdDetailRow('Total value', holdM(row.totalValue)) +
       holdDetailRow('Unfunded', holdM(unfunded)) +

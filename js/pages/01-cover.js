@@ -26,29 +26,21 @@
 function renderCoverSlide(){
   const toc = [
     {label:'About Tangible', slide:2},
-    {label:'Scale &amp; track record', slide:3, aria:'Scale and track record'},
     {label:'Routes to Liquidity', slide:4},
-    {label:'Key portfolio considerations', slide:5},
-    {label:'Strategy Mix', slide:6},
-    {label:'Manager Concentration', slide:7},
-    {label:'Market Sentiment', slide:8},
-    {label:'Strategy Deep Dive: Private Equity', slide:9},
+    {label:'Portfolio Overview', slide:5},
+    {label:'Strategy Deep Dives', slide:8},
+    {label:'Market Sentiment', slide:9},
     {label:'Discussion Points', slide:10},
     {label:'Next Steps', slide:11},
-    {label:'Basis of Preparation', slide:12},
-    {label:'Annexes', slide:13},
     {label:'Portfolio Holdings', slide:14},
-    {label:'Contact', slide:15},
-    {label:'Disclaimer', slide:16}
+    {label:'Contact and Disclaimer', slide:15}
   ];
-  const rowH = 35;
+  const rowH = 44;
   const firstTop = 336;
   const tocHtml = toc.map((item, i) => {
     const top = firstTop + i * rowH;
-    const num = String(item.slide - 1).padStart(2, '0');
-    const aria = item.aria || item.label;
     const edge = i < toc.length - 1 ? ' coverTocRow--line' : '';
-    return `<div class="coverTocRow${edge}" data-action="goSlide" data-value="${item.slide}" role="button" tabindex="0" aria-label="${aria}" style="position:absolute;left:1161.41px;top:${top.toFixed(2)}px;width:604.99px;height:${rowH}px;"><span class="coverTocLabel">${item.label}</span><span class="coverTocNum">${num}</span></div>`;
+    return `<div class="coverTocRow${edge}" data-action="goSlide" data-value="${item.slide}" role="button" tabindex="0" aria-label="${item.label}" style="position:absolute;left:1161.41px;top:${top.toFixed(2)}px;width:604.99px;height:${rowH}px;"><span class="coverTocLabel">${item.label}</span></div>`;
   }).join('');
   return `<div class="fig-slide" style="position:relative;width:1920px;height:1080px;background:#104130;overflow:hidden;">
   <div class="fig-text" data-fig-name="title" style="position:absolute;left:68.00px;top:307.00px;width:680.00px;height:92.00px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-style:normal;font-size:84.00px;line-height:92.40px;letter-spacing:0.00px;color:#f5f5f0;text-align:left;white-space:pre;">Tangible x PSERS</div>

@@ -2,6 +2,38 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Strategy Mix Total = Portfolio source data
+
+- Total NAV and the strategy table title open the same **Portfolio source data** drawer as the right-side click.
+- Strategy rows still open that strategy.
+
+**Files:** `js/pages/07-strategy-mix.js`, `js/app.js`, `README.md`.
+
+## 2026-08-28 — Manager Concentration Remaining / Total / legend
+
+- Remaining and Total rows open the side drawer, grouped by manager.
+- The 6 numbered legend points open that manager’s fund list.
+- Named table rows and bubbles still open that one manager.
+
+**Files:** `js/pages/08-manager-concentration.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Deep Dive Remaining / Total open drawer
+
+- Remaining managers and Total rows on Strategy Deep Dive open the side drawer.
+- Grouped by manager (same as the strategy lens). Remaining = funds not in the top 5.
+- Named manager rows still open that manager’s fund list.
+
+**Files:** `js/pages/10-strategy-deep-dive.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Holdings row opens fund drawer
+
+- Click a Portfolio Holdings row to open the side drawer.
+- Numbers come from the same `CFG.rows` as the table (millions + `x`).
+- Shows NAV / DPI / TVPI / RVPI plus commitment, called, distributed, total value, unfunded, manager, vintage, vehicle.
+- Search, filter, and PDF are unchanged. Empty row and grand total do not open.
+
+**Files:** `js/pages/16-portfolio-holdings.js`, `css/styles.css`, `README.md`.
+
 ## 2026-08-28 — Added .gitignore
 
 - Ignores `.DS_Store`, Excel lock files, Python cache, `.scratch`.

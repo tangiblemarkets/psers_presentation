@@ -602,6 +602,9 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .holdTable tbody td{font-size:11px;font-weight:400;line-height:13.86px;color:#1c1f21;padding:4.5px 14px 4.5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .holdTable tbody td.hold-green,.holdTable tbody td[class~="hold-green"]{color:#104130}
 .holdScrollBody .holdTable tbody tr:nth-child(even){background:#eff4f1}
+.holdScrollBody .holdTable tbody tr.holdFundRow{cursor:pointer}
+.holdScrollBody .holdTable tbody tr.holdFundRow:hover{background:#e7efe8}
+.holdFundKpis .lensKpi .v{font-size:clamp(13px,1.15vw,18px)}
 .holdTable td.hold-green{color:#104130}
 .holdFoot .holdTotalRow td{background:#ffffff;font-size:12px;font-weight:600;color:#1c1f21;padding:9px 14px 8px 0;white-space:nowrap}
 .holdFoot .holdTotalRow td.hold-green{color:#104130}
@@ -688,7 +691,8 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
    mirrors bindPortfolioHoldingsSort()), just short enough (10 rows +
    pinned Remaining/Total) that it needs no separate scroll body. */
 .mcLegend{position:absolute;left:68px;top:786px;width:1000px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:14px 56px}
-.mcLegendItem{display:flex;align-items:center;gap:10px;min-width:0}
+.mcLegendItem{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer}
+.mcLegendItem:hover .mcLegendText{color:#104130}
 .mcLegendBadge{width:20px;height:20px;border-radius:50%;background:#006C5C;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1;flex:none}
 .mcLegendText{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;font-size:13px;color:#393939;white-space:nowrap}
 .mcWrap{box-sizing:border-box;padding:14px 18px 16px;background:#f5f5f5;border-radius:4px}

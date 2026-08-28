@@ -45,14 +45,9 @@
 // header comment for the manager-level aggregation methodology and the
 // documented Polaris Capital Group exclusion.
 //
-// Round 91: both panels are click-to-drill-down. Clicking a top-10 table
-// row (bindManagerConcentrationRows, event-delegated on #mcTbody so it
-// survives a re-sort) or a bubble opens that manager's own drawer via the
-// deck-wide openManager() in js/app.js — the same drawer every other
-// manager reference in the deck opens (Portfolio Holdings rows, the
-// portfolio-summary drawer's "largest managers" list, etc.). The pinned
-// Remaining/Total rows have no data-manager attribute and stay inert —
-// neither is a single real manager.
+// Click-to-drill-down: top-10 table rows, bubbles, and the 6 numbered
+// legend items open that manager via openManager(). Remaining / Total
+// open openDataLens() grouped by manager (same as Strategy Deep Dive).
 //
 // Bubble clicks do NOT use ApexCharts' own markerClick event: this chart
 // deliberately sets tooltip:{enabled:false} (Round 89/90, "no Apex
@@ -138,8 +133,8 @@ function mcRowHtml(m, i) {
   // Remaining/Total rows below), so only those get data-manager + the
   // clickable-row treatment — clicking opens the same openManager()
   // drawer every other manager reference in the deck opens (Round 91).
-  const cls = m.isRemaining ? 'mcRemainingRow' : 'mcClickableRow';
-  const attr = m.isRemaining ? '' : ` data-manager="${escAttr(m.manager)}"`;
+  const cls = m.isRemaining ? 'mcRemainingRow mcClickableRow' : 'mcClickableRow';
+  const attr = m.isRemaining ? ' data-mc-lens="remaining"' : ` data-manager="${escAttr(m.manager)}"`;
   return `<tr class="${cls}"${attr}>
     <td><div class="mc-namecell"><div class="mc-name">${mcEsc(m.displayName)}</div><div class="mc-bar" style="width:${barW}px;--mc-bar-i:${i};"></div></div></td>
     <td class="mc-green">${mcFormatUSD(m.nav)}</td>
@@ -151,7 +146,7 @@ function mcRowHtml(m, i) {
 
 function mcTotalRowHtml() {
   const t = MANAGER_CONCENTRATION_DATA.total;
-  return `<tr class="mcTotalRow">
+  return `<tr class="mcTotalRow mcClickableRow" data-mc-lens="total">
     <td>${mcEsc(t.label)}</td>
     <td class="mc-green">${mcFormatUSD(t.nav)}</td>
     <td>${t.pct.toFixed(1)}%</td>
@@ -196,20 +191,51 @@ function bindManagerConcentrationSort() {
   });
 }
 
-// Click-to-drill-down on the table: event delegation on #mcTbody (bound
-// once, guarded by dataset.boundRowClick) rather than per-row listeners,
-// since bindManagerConcentrationSort() above replaces tbody.innerHTML
-// wholesale on every sort — delegation means row clicks keep working
-// after a re-sort with no rebinding step. Remaining/Total rows have no
-// data-manager attribute (see mcRowHtml) so they're inert by design.
+function mcSlideRows() {
+  return CFG.rows.filter(d => d.manager !== MANAGER_CONCENTRATION_EXCLUDED_MANAGER);
+}
+
+function mcOpenTotal() {
+  const D = MANAGER_CONCENTRATION_DATA;
+  const arr = mcSlideRows();
+  if (!arr.length) return;
+  openDataLens('All managers', t('lens.includedMgrs', { n: arr.length, mgrs: D.total.count }), arr, { intro: t('lens.introStrategy') });
+}
+
+function mcOpenRemaining() {
+  const D = MANAGER_CONCENTRATION_DATA;
+  const top = {};
+  D.top10.forEach(m => { top[m.manager] = 1; });
+  const arr = mcSlideRows().filter(d => !top[d.manager]);
+  if (!arr.length) return;
+  openDataLens(D.remaining.label, t('lens.includedMgrs', { n: arr.length, mgrs: D.remaining.count }), arr, { intro: t('lens.introStrategy') });
+}
+
 function bindManagerConcentrationRows() {
   const tbody = document.getElementById('mcTbody');
   if (!tbody || tbody.dataset.boundRowClick) return;
   tbody.dataset.boundRowClick = '1';
   tbody.addEventListener('click', (e) => {
-    const row = e.target.closest('tr[data-manager]');
-    if (!row) return;
-    openManager(row.dataset.manager);
+    const row = e.target.closest('tr');
+    if (!row || !tbody.contains(row)) return;
+    if (row.dataset.manager) {
+      openManager(row.dataset.manager);
+      return;
+    }
+    const lens = row.getAttribute('data-mc-lens');
+    if (lens === 'remaining') mcOpenRemaining();
+    else if (lens === 'total') mcOpenTotal();
+  });
+}
+
+function bindManagerConcentrationLegend() {
+  const legend = document.querySelector('.mcLegend');
+  if (!legend || legend.dataset.boundClick) return;
+  legend.dataset.boundClick = '1';
+  legend.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-manager]');
+    if (!item) return;
+    openManager(item.dataset.manager);
   });
 }
 
@@ -258,7 +284,7 @@ const MC_LEGEND_NAMES = {
 function mcRenderLegend() {
   const items = MANAGER_CONCENTRATION_DATA.highlighted.map(m => {
     const name = MC_LEGEND_NAMES[m.manager] || m.displayName;
-    return `<div class="mcLegendItem"><span class="mcLegendBadge">${m.rank}</span><span class="mcLegendText">${mcEsc(name)} (${mcFormatUSD(m.nav)} / ${m.pct.toFixed(1)}% of NAV)</span></div>`;
+    return `<div class="mcLegendItem" data-manager="${escAttr(m.manager)}"><span class="mcLegendBadge">${m.rank}</span><span class="mcLegendText">${mcEsc(name)} (${mcFormatUSD(m.nav)} / ${m.pct.toFixed(1)}% of NAV)</span></div>`;
   }).join('');
   return `<div class="mcLegend">${items}</div>`;
 }
@@ -451,4 +477,5 @@ function renderManagerConcentrationSlideAfterRender() {
 
   bindManagerConcentrationSort();
   bindManagerConcentrationRows();
+  bindManagerConcentrationLegend();
 }

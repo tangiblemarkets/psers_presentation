@@ -123,8 +123,9 @@ function holdX(n){
   return (Math.round(n * 100) / 100).toFixed(2) + 'x';
 }
 
-function holdAllRows(){
-  return CFG.rows.map(r => ({
+function holdFromSrc(r, i){
+  return {
+    _i: i,
     fund: r.investment,
     strategy: holdStrategyLabel(r),
     commitment: holdFmtAmt((r.commitment || 0) / 1e6),
@@ -135,7 +136,11 @@ function holdAllRows(){
     dpi: holdX(r.dpi || 0),
     rvpi: holdX(r.rvpi || 0),
     tvpi: holdX(r.tvpi || 0)
-  })).sort((a, b) => holdParseAmt(b.nav) - holdParseAmt(a.nav));
+  };
+}
+
+function holdAllRows(){
+  return CFG.rows.map((r, i) => holdFromSrc(r, i)).sort((a, b) => holdParseAmt(b.nav) - holdParseAmt(a.nav));
 }
 
 function holdStrategyOptions(){
@@ -220,7 +225,7 @@ function holdTotalFromRows(rows){
 }
 
 function holdRowHtml(row){
-  return `<tr>${HOLD_COLS.map(col => {
+  return `<tr class="holdFundRow" data-hold-i="${row._i}">${HOLD_COLS.map(col => {
     const v = row[col.key] == null ? '' : row[col.key];
     const cls = HOLD_GREEN_COLS.has(col.key) ? ' class="hold-green"' : '';
     return `<td style="text-align:${col.align};"${cls}>${v === '' ? '' : String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>`;
@@ -248,6 +253,52 @@ function holdTotalCellsHtml(){
   }).join('');
 }
 
+function holdM(formatted){
+  const n = holdParseAmt(formatted);
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + 'M';
+}
+
+function holdDetailRow(label, value){
+  return '<div class="dataRow"><div class="name">' + label + '</div><div class="val">' + value + '</div></div>';
+}
+
+function openHoldFund(i){
+  const src = CFG.rows[i];
+  if (!src) return;
+  const row = holdFromSrc(src, i);
+  const unfunded = holdFmtAmt((src.unfunded || 0) / 1e6);
+  const body =
+    '<div class="lensKpis lensKpis-4 holdFundKpis">' +
+      '<div class="lensKpi"><div class="v">' + holdM(row.nav) + '</div><div class="l">NAV</div></div>' +
+      '<div class="lensKpi"><div class="v">' + row.dpi + '</div><div class="l">DPI</div></div>' +
+      '<div class="lensKpi"><div class="v">' + row.tvpi + '</div><div class="l">TVPI</div></div>' +
+      '<div class="lensKpi"><div class="v">' + row.rvpi + '</div><div class="l">RVPI</div></div>' +
+    '</div>' +
+    '<div class="section">' +
+      holdDetailRow('Strategy', esc(row.strategy)) +
+      holdDetailRow('Manager', esc(src.manager || '')) +
+      holdDetailRow('Vintage', esc(String(src.vintage || ''))) +
+      holdDetailRow('Vehicle', esc(src.vehicle || '')) +
+      holdDetailRow('Commitment', holdM(row.commitment)) +
+      holdDetailRow('Called', holdM(row.called)) +
+      holdDetailRow('Distributed', holdM(row.distributed)) +
+      holdDetailRow('Total value', holdM(row.totalValue)) +
+      holdDetailRow('Unfunded', holdM(unfunded)) +
+    '</div>';
+  openDrawer(row.fund, row.strategy + (src.vintage ? ' · ' + src.vintage : ''), body);
+}
+
+function holdBindRows(){
+  const tbody = document.querySelector('#holdTable tbody');
+  if (!tbody || tbody.dataset.holdClick) return;
+  tbody.dataset.holdClick = '1';
+  tbody.addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-hold-i]');
+    if (!tr) return;
+    openHoldFund(Number(tr.getAttribute('data-hold-i')));
+  });
+}
+
 function holdRefresh(){
   const tbody = document.querySelector('#holdTable tbody');
   const foot = document.getElementById('holdFootRow');
@@ -255,6 +306,7 @@ function holdRefresh(){
   if (foot) foot.innerHTML = holdTotalCellsHtml();
   holdRenderHeadArrows();
   holdSyncFilterBtn();
+  holdBindRows();
 }
 
 function holdFilterCount(){
@@ -458,6 +510,7 @@ function bindPortfolioHoldingsSort(){
     filt.addEventListener('click', openHoldFilterDrawer);
   }
   holdSyncFilterBtn();
+  holdBindRows();
 }
 
 function holdRowCount(){

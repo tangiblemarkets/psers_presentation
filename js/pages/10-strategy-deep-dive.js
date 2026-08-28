@@ -30,16 +30,14 @@
 // tooltip via #donutTip so CSS slide-scale cannot offset Apex's built-in
 // tip), and 5 equal-width HTML split bars for DPI vs RVPI (no tooltip).
 //
-// INTERACTIVE DRILL-DOWNS (Round 92, per the user's request: "lets make
-// the clicks interactive so click on managers and vintage open its
-// relative popup"):
-//   - Clicking a top-5 manager row (not Remaining/Total) opens that
-//     manager's drawer via the existing openManager() (js/app.js) — same
-//     mechanism as Manager Concentration's Round 91 fix
-//     (bindManagerConcentrationRows() there; bindStrategyDeepDiveRows()
-//     here, identical pattern). ONE delegated click listener on the
-//     (persistent) <tbody> survives sort-triggered innerHTML swaps and
-//     strategy-driven re-renders alike.
+// INTERACTIVE DRILL-DOWNS:
+//   - Top-5 manager row → openManager() (flat fund list).
+//   - Remaining / Total → openDataLens() grouped by manager (same as
+//     the strategy drawer). Remaining uses funds not in the top 5.
+//     Total uses every fund in this strategy (D.rows).
+//   - Vintage column → vintage-segment drawer.
+//   ONE delegated click listener on the persistent <tbody> survives
+//   sort-triggered innerHTML swaps and strategy-driven re-renders.
 //   - Clicking a NAV-by-vintage column opens a drawer filtered to that
 //     strategy + vintage bucket's underlying fund rows
 //     (sddVintageDrilldown() below), reusing the existing generic
@@ -127,8 +125,8 @@ function sddSortedRows(D) {
 
 function sddRowHtml(m, maxNav, i) {
   const barW = (m.nav / maxNav * SDD_BAR_MAX_PX).toFixed(1);
-  const cls = m.isRemaining ? 'sddRemainingRow' : 'sddClickableRow';
-  const dataAttr = m.isRemaining ? '' : ' data-manager="' + escAttr(m.manager) + '"';
+  const cls = m.isRemaining ? 'sddRemainingRow sddClickableRow' : 'sddClickableRow';
+  const dataAttr = m.isRemaining ? ' data-sdd-lens="remaining"' : ' data-manager="' + escAttr(m.manager) + '"';
   return '<tr class="' + cls + '"' + dataAttr + '>' +
     '<td class="sdd-namecell"><span class="sdd-name">' + esc(m.displayName) + '</span><span class="sdd-bar" style="width:' + barW + 'px;--sdd-bar-i:' + i + ';"></span></td>' +
     '<td class="sdd-green">' + sddFormatUSD(m.nav) + '</td>' +
@@ -140,7 +138,7 @@ function sddRowHtml(m, maxNav, i) {
 
 function sddTotalRowHtml(D) {
   const tot = D.total;
-  return '<tr class="sddTotalRow">' +
+  return '<tr class="sddTotalRow sddClickableRow" data-sdd-lens="total">' +
     '<td>' + esc(tot.label) + '</td>' +
     '<td class="sdd-green">' + sddFormatUSD(tot.nav) + '</td>' +
     '<td>' + tot.dpi.toFixed(2) + 'x</td>' +
@@ -190,14 +188,43 @@ function bindStrategyDeepDiveSort() {
 // bindManagerConcentrationRows() in js/pages/08-manager-concentration.js.
 // ONE delegated listener on the persistent <tbody> survives both
 // sort-triggered and strategy-change-triggered innerHTML replacement.
+function sddNavShare(arr) {
+  const m = weightedMetrics(arr);
+  const pct = m.nav && CFG.totalNav ? (m.nav / CFG.totalNav * 100).toFixed(1) : '0.0';
+  return t('lens.includedNavShare', { n: arr.length, pct: pct });
+}
+
+function sddOpenTotal() {
+  if (!sddCurrent) return;
+  const arr = sddCurrent.D.rows;
+  if (!arr.length) return;
+  openDataLens(sddCurrent.cfg.label, sddNavShare(arr), arr, { intro: t('lens.introStrategy') });
+}
+
+function sddOpenRemaining() {
+  if (!sddCurrent) return;
+  const D = sddCurrent.D;
+  const top = {};
+  D.top.forEach(function (m) { top[m.manager] = 1; });
+  const arr = D.rows.filter(function (r) { return !top[r.manager]; });
+  if (!arr.length) return;
+  openDataLens(D.remaining.label, t('lens.includedMgrs', { n: arr.length, mgrs: D.remaining.count }), arr, { intro: t('lens.introStrategy') });
+}
+
 function bindStrategyDeepDiveRows() {
   const tbody = document.getElementById('sddTbody');
   if (!tbody || tbody.dataset.boundRowClick) return;
   tbody.dataset.boundRowClick = '1';
   tbody.addEventListener('click', function (e) {
-    const row = e.target.closest('tr[data-manager]');
-    if (!row) return;
-    openManager(row.dataset.manager);
+    const row = e.target.closest('tr');
+    if (!row || !tbody.contains(row)) return;
+    if (row.dataset.manager) {
+      openManager(row.dataset.manager);
+      return;
+    }
+    const lens = row.getAttribute('data-sdd-lens');
+    if (lens === 'remaining') sddOpenRemaining();
+    else if (lens === 'total') sddOpenTotal();
   });
 }
 

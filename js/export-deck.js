@@ -65,7 +65,7 @@ function deckAddPage(pdf, canvas, first){
   pdf.addImage(img, 'JPEG', 0, 0, 1920, 1080, undefined, 'FAST');
 }
 
-async function deckCaptureCurrentInner(){
+async function deckCaptureCurrentInner(scale){
   const inner = document.querySelector('#slideHtmlCanvas .slideCanvasInner');
   if (!inner) throw new Error('No slide to export');
   if (typeof html2canvas !== 'function') throw new Error('PDF library missing');
@@ -77,7 +77,9 @@ async function deckCaptureCurrentInner(){
 
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');
-  host.style.cssText = 'position:fixed;left:-12000px;top:0;width:1920px;height:1080px;overflow:hidden;background:#fff;z-index:-1;';
+  // Keep the clone on-screen. Windows Chrome often skips paint for
+  // nodes parked far off-canvas (left:-12000px), so export-all failed there.
+  host.style.cssText = 'position:fixed;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:#fff;z-index:90;pointer-events:none;';
   const clone = inner.cloneNode(true);
   clone.style.transform = 'none';
   clone.style.transformOrigin = 'top left';
@@ -97,6 +99,7 @@ async function deckCaptureCurrentInner(){
   clone.querySelectorAll('.fig-hotspot, .apexcharts-tooltip').forEach(function (el) { el.remove(); });
   host.appendChild(clone);
   document.body.appendChild(host);
+  await deckWait(80);
 
   try {
     return await html2canvas(clone, {
@@ -104,11 +107,13 @@ async function deckCaptureCurrentInner(){
       height: 1080,
       windowWidth: 1920,
       windowHeight: 1080,
-      scale: 1.25,
+      scale: scale || 1.15,
       backgroundColor: '#ffffff',
       useCORS: true,
+      allowTaint: true,
       logging: false,
-      imageTimeout: 4000
+      imageTimeout: 8000,
+      removeContainer: true
     });
   } finally {
     host.remove();
@@ -121,7 +126,23 @@ async function deckShowSlideQuiet(n){
 }
 
 function deckSave(pdf, name){
-  pdf.save(name);
+  try {
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 2500);
+  } catch (err) {
+    pdf.save(name);
+  }
 }
 
 async function exportCurrentSlidePdf(){
@@ -167,8 +188,9 @@ async function exportAllSlidesPdf(){
     for (let i = 1; i <= total; i++) {
       deckSetProgress('Exporting ' + i + ' of ' + total + '…');
       await deckShowSlideQuiet(i);
-      const canvas = await deckCaptureCurrentInner();
+      const canvas = await deckCaptureCurrentInner(1);
       deckAddPage(pdf, canvas, i === 1);
+      await deckWait(120);
     }
     deckSave(pdf, 'PSERS-presentation.pdf');
   } catch (err) {

@@ -2,6 +2,37 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Market Sentiment two pick buttons
+
+- Removed the title gear.
+- Strategy and vintage are two gray pills with the popup icon.
+- Both open the same choose-view drawer.
+
+**Files:** `js/pages/09-market-sentiment.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Deep Dive strategy button
+
+- Title strategy name is a `#f5f5f5` pill button with a popup icon.
+- Click still opens the choose-strategy drawer.
+
+**Files:** `js/pages/10-strategy-deep-dive.js`, `css/styles.css`, `README.md`.
+
+## 2026-08-28 — Windows drawer sort + Export all
+
+- Replaced the native sort `<select>` with a dark custom menu (Windows paints native lists white).
+- Export all no longer parks the clone at `left:-12000px` (Windows Chrome often skips that paint).
+- PDF save uses a blob download first.
+
+**Files:** `js/app.js`, `css/styles.css`, `js/export-deck.js`, `README.md`.
+
+## 2026-08-28 — Drop Liquidity Options
+
+- Removed the Liquidity Options divider (old footer 09).
+- Cover TOC and chrome page numbers after it each dropped by one.
+- Deck is 16 slides (00–15).
+
+**Files:** `js/app.js`, `js/data.js`, `js/pages/01-cover.js`, `index.html`, later page chrome numbers, deleted `js/pages/11-liquidity-options-divider.js`, `README.md`.
+
 ## 2026-08-28 — Market Sentiment hardcoded
 
 - Stopped computing this slide from Excel.

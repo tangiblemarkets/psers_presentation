@@ -1,4 +1,4 @@
 // Divider slide immediately before Portfolio Holdings.
 function renderAnnexesDividerSlide(){
-  return renderSectionDividerSlide('Annexes', '13');
+  return renderSectionDividerSlide('Annexes', '12');
 }

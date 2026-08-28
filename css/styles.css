@@ -817,12 +817,34 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 
 .msSettingsVintageHead{margin-top:22px}
 
-.sddSettingsBtn{appearance:none;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#104130;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none;z-index:8;position:relative;top:3px}
-.sddSettingsBtn svg{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.sddSettingsBtn:hover{color:#0a2e22;opacity:.7}
+.sddStratBtn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:12px;margin:0;padding:6px 16px 6px 18px;border:0;border-radius:10px;background:#f5f5f5;color:#104130;font:inherit;font-weight:500;line-height:1.15;cursor:pointer;flex:none}
+.sddStratBtn:hover{background:#ececec}
+.sddStratBtnIcon{flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.msPickRow{display:flex;align-items:center;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:32px;color:#104130}
 .sddStratList{margin:0}
 .sddStratPick{cursor:pointer}
 .sddStratPick.is-on .val{color:var(--accent)}
+
+.drawer,.lensTools{color-scheme:dark}
+.lensSort{position:relative;flex:none;z-index:6}
+.lensSortBtn{
+  appearance:none;-webkit-appearance:none;
+  height:30px;min-width:168px;margin:0;padding:0 28px 0 10px;
+  background:#163528 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M3 4.5l3 3 3-3' stroke='%23f5f5f0' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>") no-repeat right 10px center;
+  border:1px solid rgba(255,255,255,.16);color:#f5f5f0;
+  font-family:inherit;font-size:11px;font-weight:300;text-align:left;cursor:pointer;border-radius:0
+}
+.lensSortBtn:hover{border-color:rgba(255,255,255,.32)}
+.lensSortMenu{
+  position:absolute;right:0;top:calc(100% + 4px);min-width:100%;
+  background:#163528;border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 14px 32px rgba(0,0,0,.4);padding:4px 0
+}
+.lensSortOpt{
+  display:block;width:100%;border:0;background:transparent;color:#f5f5f0;
+  text-align:left;padding:8px 12px;font-family:inherit;font-size:11px;font-weight:300;cursor:pointer
+}
+.lensSortOpt:hover,.lensSortOpt.is-on{background:rgba(255,255,255,.08)}
 
 .exportOverlay{position:fixed;inset:0;z-index:10050;background:rgba(13,43,31,.55);display:flex;align-items:center;justify-content:center}
 .exportOverlay[hidden]{display:none!important}

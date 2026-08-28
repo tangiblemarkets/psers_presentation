@@ -33,14 +33,13 @@ function renderCoverSlide(){
     {label:'Manager Concentration', slide:7},
     {label:'Market Sentiment', slide:8},
     {label:'Strategy Deep Dive: Private Equity', slide:9},
-    {label:'Liquidity Options', slide:10},
-    {label:'Discussion Points', slide:11},
-    {label:'Next Steps', slide:12},
-    {label:'Basis of Preparation', slide:13},
-    {label:'Annexes', slide:14},
-    {label:'Portfolio Holdings', slide:15},
-    {label:'Contact', slide:16},
-    {label:'Disclaimer', slide:17}
+    {label:'Discussion Points', slide:10},
+    {label:'Next Steps', slide:11},
+    {label:'Basis of Preparation', slide:12},
+    {label:'Annexes', slide:13},
+    {label:'Portfolio Holdings', slide:14},
+    {label:'Contact', slide:15},
+    {label:'Disclaimer', slide:16}
   ];
   const rowH = 35;
   const firstTop = 336;

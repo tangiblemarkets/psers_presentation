@@ -1,4 +1,4 @@
-// Shared dark divider used by Liquidity Options and Annexes.
+// Shared dark divider used by Annexes.
 function renderSectionDividerSlide(title, page){
   return `<div class="fig-slide" style="position:relative;width:1920px;height:1080px;background:#0d3a28;overflow:hidden;">
   <div class="fig-text" data-fig-name="chrome-year" style="position:absolute;left:68.00px;top:64.00px;width:49.00px;height:24.00px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:left;white-space:pre;">2026</div>

@@ -166,22 +166,33 @@ function msEnsureValidState() {
   msState = { strategy: s, vintageSegment: msPickVintage(s, MARKET_SENTIMENT_DATA.defaultVintageSegment) };
 }
 
-function msSubtitleText() {
+function msStrategyLabel() {
   const D = MARKET_SENTIMENT_DATA;
-  return (D.strategyDisplayLabels[msState.strategy] || msState.strategy) + ', ' + msState.vintageSegment;
+  return D.strategyDisplayLabels[msState.strategy] || msState.strategy;
+}
+
+function msPickIconHtml() {
+  return '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="8" width="12" height="12" rx="1.5"/><path d="M10 4h10v10"/><path d="M20 4l-8 8"/></svg>';
+}
+
+function msPickBtnHtml(id, label) {
+  return '<button type="button" class="sddStratBtn msPickBtn" title="Choose strategy and vintage" aria-label="Choose strategy and vintage">' +
+    '<span id="' + id + '">' + esc(label) + '</span>' +
+    msPickIconHtml() +
+    '</button>';
 }
 
 function msTitleBarHtml() {
-  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1700px;height:55px;display:flex;align-items:center;gap:16px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
+  return '\n  <div id="msTitleBar" style="position:absolute;left:68px;top:136px;width:1700px;height:55px;display:flex;align-items:center;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:44px;color:#104130;white-space:nowrap;">' +
     '<span>' + esc(MARKET_SENTIMENT_DATA.title) + '</span>' +
-    '<button type="button" id="msSettingsBtn" class="sddSettingsBtn" title="Choose strategy and vintage" aria-label="Choose strategy and vintage">' +
-      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.82-.33 1.7 1.7 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.68 15a1.7 1.7 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.68a1.7 1.7 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>' +
-    '</button>' +
     '</div>';
 }
 
 function msSubtitleHtml() {
-  return '\n  <div id="msSubtitle" class="fig-text" style="position:absolute;left:68px;top:196px;width:1550px;height:50px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-size:40px;line-height:50px;color:#787878;white-space:nowrap;">' + esc(msSubtitleText()) + '</div>';
+  return '\n  <div id="msSubtitle" class="msPickRow" style="position:absolute;left:68px;top:196px;width:1550px;height:56px;">' +
+    msPickBtnHtml('msStrategyLabel', msStrategyLabel()) +
+    msPickBtnHtml('msVintageLabel', msState.vintageSegment) +
+    '</div>';
 }
 
 function msPickRowHtml(label, on, kind, value) {
@@ -309,7 +320,7 @@ function renderMarketSentimentSlide() {
   '\n  <div class="fig-box" data-fig-name="chrome-logo-box" style="position:absolute;left:1675.00px;top:58.00px;width:177.00px;height:44.00px;border:1px solid #0f0f0f;box-sizing:border-box;"></div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-logo" style="position:absolute;left:1677.00px;top:69.00px;width:177.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:5.00px;color:#0f0f0f;text-align:center;white-space:pre;">TANGIBLE</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-footer" style="position:absolute;left:68.00px;top:982.00px;width:112.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:left;white-space:pre;">Confidential</div>' +
-  '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:right;white-space:pre;">08</div>' +
+  '\n  <div class="fig-text" data-fig-name="chrome-page" style="position:absolute;left:1674.00px;top:982.00px;width:178.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:19.00px;line-height:23.94px;letter-spacing:0.00px;color:#96ac9e;text-align:right;white-space:pre;">07</div>' +
   '\n  <div class="fig-text" data-fig-name="chrome-footer-note" style="position:absolute;left:219.00px;top:982.00px;width:954.00px;height:24.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:18.00px;letter-spacing:0.00px;color:#787878;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;">' + D.footnote + '</div>' +
   msTitleBarHtml() +
   msSubtitleHtml() +
@@ -430,14 +441,14 @@ function renderMarketSentimentSlideAfterRender() {
   marketSentimentChartInstance = new ApexCharts(mount, msChartOptionsFor(cur.sellVsHold, play));
   marketSentimentChartInstance.render();
 
-  const btn = document.getElementById('msSettingsBtn');
-  if (btn && !btn.dataset.bound) {
+  document.querySelectorAll('.msPickBtn').forEach(function (btn) {
+    if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       openMsSettingsDrawer();
     });
-  }
+  });
 }
 
 function msOnStrategyChange(newStrategy) {
@@ -462,8 +473,10 @@ function msApplySelection() {
   const fillLeft = barX0 + (P.rangeLow - P.barScaleMin) / (P.barScaleMax - P.barScaleMin) * barWidth;
   const fillWidth = (P.rangeHigh - P.rangeLow) / (P.barScaleMax - P.barScaleMin) * barWidth;
 
-  const subtitle = document.getElementById('msSubtitle');
-  if (subtitle) subtitle.textContent = D.subtitleText;
+  const stratEl = document.getElementById('msStrategyLabel');
+  if (stratEl) stratEl.textContent = msStrategyLabel();
+  const vintEl = document.getElementById('msVintageLabel');
+  if (vintEl) vintEl.textContent = msState.vintageSegment;
 
   const rangeStat = document.getElementById('msRangeStat');
   if (rangeStat) rangeStat.textContent = P.rangeDisplay;

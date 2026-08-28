@@ -39,15 +39,3 @@ Do not add another numbers file.
 | `source-data/` | The Excel workbook |
 | `tools/` | `python3 tools/export.py` |
 | `cursor.md` | Build log |
-
-## Changelog
-
-- **Round 132 — Excel is the only numbers source.** Holdings and Key
-  Considerations now read `CFG.rows`. Deleted the extra data files and
-  `clean_data.json`.
-
-- **Round 131 — Strategy Mix table and drawer both read `CFG.rows`.**
-
-- **Round 130 — Strategy Mix row clicks use the same 5 buckets as the table.**
-
-- **Round 129 — Delivery cleanup.** Older rounds: `cursor.md`.

@@ -2,6 +2,12 @@
 
 Living log of changes made in Cursor. Newest first.
 
+## 2026-08-28 — Added .gitignore
+
+- Ignores `.DS_Store`, Excel lock files, Python cache, `.scratch`.
+
+**Files:** `.gitignore`, `README.md`.
+
 ## 2026-08-28 — Excel is the only numbers source
 
 - Holdings and Key Considerations now read `CFG.rows`.

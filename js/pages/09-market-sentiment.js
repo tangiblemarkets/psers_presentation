@@ -239,7 +239,7 @@ function msStrategyLabel() {
 }
 
 function msPickIconHtml() {
-  return '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="8" width="12" height="12" rx="1.5"/><path d="M10 4h10v10"/><path d="M20 4l-8 8"/></svg>';
+  return '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="52" height="52" aria-hidden="true"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg>';
 }
 
 function msPickBtnHtml(id, label) {

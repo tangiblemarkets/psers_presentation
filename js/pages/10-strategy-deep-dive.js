@@ -269,7 +269,7 @@ function sddTitleBarHtml() {
     '<span>Strategy Deep Dive:</span>' +
     '<button type="button" id="sddSettingsBtn" class="sddStratBtn" title="Choose strategy" aria-label="Choose strategy">' +
       '<span id="sddTitleStrategy">' + esc(sddCurrentLabel()) + '</span>' +
-      '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="4" y="8" width="12" height="12" rx="1.5"/><path d="M10 4h10v10"/><path d="M20 4l-8 8"/></svg>' +
+      '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="52" height="52" aria-hidden="true"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg>' +
     '</button>' +
     '</div>';
 }
@@ -292,7 +292,7 @@ function openSddStrategyDrawer() {
 }
 
 function sddSubtitleHtml(N) {
-  return '\n  <div id="sddSubtitle" class="fig-text" style="position:absolute;left:68px;top:200px;width:1550px;height:28px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19px;color:#808582;white-space:nowrap;">' + esc(N.subtitle) + '</div>';
+  return '\n  <div id="sddSubtitle" class="fig-text" style="position:absolute;left:68px;top:216px;width:1550px;height:28px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-size:19px;color:#808582;white-space:nowrap;">' + esc(N.subtitle) + '</div>';
 }
 
 function sddPointsHtml(N) {

@@ -20,24 +20,17 @@
 // mcDisplayName() and MANAGER_CONCENTRATION_DATA.totalNav. It must
 // also load after 10-strategy-deep-dive-narratives.data.js.
 //
-// SDD_STRATEGIES — the 4 dropdown options and each one's CFG.rows
-// `tier1` filter. `tier1` is CFG.rows' finest-grained taxonomy (11
-// distinct values). Private Equity combines Buyout + Special Situations
-// (Figma mockup manager count of 49). Real Estate and Infrastructure
-// are one option: this slide treats them as a single sleeve.
-//   Real Estate and Infrastructure -> Real Estate Partnership,
-//                         Real Estate Co-Investment, Direct Real Estate,
-//                         Infrastructure Partnership, Infrastructure
-//                         Co-Investment
-//   Credit             -> Private Credit Partnership, Private Credit
-//                         Co-Investment
-//   Growth & Venture   -> Venture Capital, Growth Equity
+// SDD_STRATEGIES — the 4 dropdown options. Filters use `slideStrategy`
+// (same field as Strategy Mix), not raw `tier1`. Insight Buyout / PE
+// Special Situations vehicles are reported in Growth & Venture, so a
+// tier1 filter would put them in Private Equity here and G&V on Mix.
+// Real Estate and Infrastructure stay one option on this slide.
 const SDD_STRATEGIES = [
-  { key: 'private-equity', label: 'Private Equity',    tier1Keys: ['Buyout', 'PE Special Situations'] },
+  { key: 'private-equity', label: 'Private Equity', slideStrategies: ['Private Equity'] },
   { key: 'real-estate-infra', label: 'Real Estate & Infra', navLabel: 'RE & Infra NAV',
-    tier1Keys: ['Real Estate Partnership', 'Real Estate Co-Investment', 'Direct Real Estate', 'Infrastructure Partnership', 'Infrastructure Co-Investment'] },
-  { key: 'credit',         label: 'Private Credit',     tier1Keys: ['Private Credit Partnership', 'Private Credit Co-Investment'] },
-  { key: 'growth-venture', label: 'Growth & Venture',   tier1Keys: ['Venture Capital', 'Growth Equity'] }
+    slideStrategies: ['Real Estate', 'Infrastructure'] },
+  { key: 'credit', label: 'Private Credit', slideStrategies: ['Private Credit'] },
+  { key: 'growth-venture', label: 'Growth & Venture', slideStrategies: ['Growth & Venture'] }
 ];
 
 function sddStrategyByKey(key) {
@@ -102,11 +95,11 @@ function sddAggregate(list) {
 // computeStrategyDeepDiveData(strategyConfig) — one entry from
 // SDD_STRATEGIES. Structurally identical to the pre-Round-92 PE-only
 // version (see project memory psers_v7_round58_strategy_deep_dive.md),
-// just parameterized by strategyConfig.tier1Keys instead of a hardcoded
-// constant, and generalized field names (strategyNav, not peNav).
+// just parameterized by strategyConfig.slideStrategies instead of a
+// hardcoded constant, and generalized field names (strategyNav, not peNav).
 function computeStrategyDeepDiveData(strategyConfig) {
   const rows = CFG.rows.filter(function (r) {
-    return strategyConfig.tier1Keys.indexOf(r.tier1) !== -1;
+    return strategyConfig.slideStrategies.indexOf(r.slideStrategy) !== -1;
   });
 
   // ---- manager rollup (mirrors computeManagerConcentrationData()) ----

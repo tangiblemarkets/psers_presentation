@@ -731,7 +731,8 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 .mc-name{width:178px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mc-bar{height:11px;background:#104130;border-radius:3px;flex:none;transform-origin:left center}
 .mcTbody-play .mc-bar{transform:scaleX(0);animation:sddBarGrow .55s ease-out forwards;animation-delay:calc(var(--mc-bar-i,0)*.07s)}
-.mcTable tbody .mcRemainingRow td{color:#1a1a1a}
+.mcTable tbody .mcRemainingRow .mc-name{color:#787878;font-weight:400}
+.mcRemainingRow .mc-bar{background:#4a9573}
 .mcTable tbody .mcTotalRow td{font-weight:700;border-top:1px solid #dee4df;padding-top:8px}
 .mcTotalRow td.mc-green{color:#104130}
 /* Round 91: click-to-drill-down — table rows for real managers (not the

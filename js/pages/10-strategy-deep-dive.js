@@ -31,7 +31,7 @@
 // tip), and 5 equal-width HTML split bars for DPI vs RVPI (no tooltip).
 //
 // INTERACTIVE DRILL-DOWNS:
-//   - Top-5 manager row → openManager() (flat fund list).
+//   - Top-5 manager row → openManager() on this strategy's funds only.
 //   - Remaining / Total → openDataLens() grouped by manager (same as
 //     the strategy drawer). Remaining uses funds not in the top 5.
 //     Total uses every fund in this strategy (D.rows).
@@ -219,7 +219,7 @@ function bindStrategyDeepDiveRows() {
     const row = e.target.closest('tr');
     if (!row || !tbody.contains(row)) return;
     if (row.dataset.manager) {
-      openManager(row.dataset.manager);
+      openManager(row.dataset.manager, sddCurrent && sddCurrent.D.rows);
       return;
     }
     const lens = row.getAttribute('data-sdd-lens');

@@ -38,34 +38,16 @@ function sddStrategyByKey(key) {
   return found || SDD_STRATEGIES[0];
 }
 
-// SDD_VINTAGE_BUCKETS — 5 buckets over the raw `vintage` YEAR field, NOT
-// CFG.rows' own `vintage_segment` field (whose cut points — Pre-2013 /
-// 2013-2015 / 2016-2018 / 2019-2021 / 2022+ — don't match this design).
-// Fixed across every strategy (the x-axis labels never change when the
-// dropdown does — only each column's bar height/DPI/RVPI do). The first
-// bucket is labelled "2008-2014" per the original Private Equity Figma
-// mockup but its filter is really "vintage <= 2014": that mockup's own
-// $485M figure for that bucket only reconciles once the handful of
-// pre-2008 funds in that sleeve are folded in, so a strict 2008-2014
-// window would silently drop them — this reproduces the mockup's actual
-// grouping rather than its literal label. The same 5 cut points are
-// reused as-is for every other strategy (not re-derived per strategy)
-// since they're a fixed reporting convention, not something the
-// workbook defines per sleeve.
+// SDD_VINTAGE_BUCKETS — same 5 bands as Strategy Mix and Market Sentiment
+// (`vintage_segment` on CFG.rows). Labels stay fixed when the strategy
+// dropdown changes; only bar heights / DPI / RVPI update.
 const SDD_VINTAGE_BUCKETS = [
-  { label: '2008–2014', max: 2014 },
-  { label: '2015–2018', max: 2018 },
-  { label: '2019–2021', max: 2021 },
-  { label: '2022–2023', max: 2023 },
-  { label: '2024–2026', max: Infinity }
+  { label: 'Pre-2013', segmentKey: 'Pre-2013' },
+  { label: '2013-2015', segmentKey: '2013-2015' },
+  { label: '2016-2018', segmentKey: '2016-2018' },
+  { label: '2019-2021', segmentKey: '2019-2021' },
+  { label: '2022+', segmentKey: '2022+' }
 ];
-
-function sddBucketIndex(vintage) {
-  for (let i = 0; i < SDD_VINTAGE_BUCKETS.length; i++) {
-    if (vintage <= SDD_VINTAGE_BUCKETS[i].max) return i;
-  }
-  return SDD_VINTAGE_BUCKETS.length - 1;
-}
 
 // sddAggregate() — same "sum the dollars, then derive the ratio" pattern
 // as aggregate() in 08-manager-concentration.data.js: dpi/rvpi/tvpi must
@@ -154,8 +136,8 @@ function computeStrategyDeepDiveData(strategyConfig) {
 
   // ---- vintage buckets (feeds both the NAV-by-vintage chart and the
   // DPI-vs-RVPI small multiples) ----
-  const buckets = SDD_VINTAGE_BUCKETS.map(function (b, i) {
-    const points = rows.filter(function (r) { return sddBucketIndex(r.vintage) === i; });
+  const buckets = SDD_VINTAGE_BUCKETS.map(function (b) {
+    const points = rows.filter(function (r) { return r.vintage_segment === b.segmentKey; });
     const agg = sddAggregate(points);
     agg.label = b.label;
     return agg;

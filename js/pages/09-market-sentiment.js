@@ -13,10 +13,6 @@ const MS_SEGMENT_COLORS = { red: '#f3a9a0', yellow: '#f5c86a', green: '#7cbf9e' 
 
 const MS_COL_X = { left: 68, right: 494 };
 const MS_ROW_Y = { 0: 674, 1: 790 };
-// Tag-pill left x per column/row — pills are auto-width (padding, not a
-// fixed px width) since "Favourable"/"Moderate"/"Unfavourable" are
-// different lengths.
-const MS_TAG_X = { left: { 0: 382, 1: 382 }, right: { 0: 794, 1: 822 } };
 const MS_SEG_GAP = 3;
 const MS_LABEL_TO_TAG_DY = -2;
 const MS_LABEL_TO_VALUE_DY = 18;
@@ -239,7 +235,7 @@ function msStrategyLabel() {
 }
 
 function msPickIconHtml() {
-  return '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="52" height="52" aria-hidden="true"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg>';
+  return '<span class="sddStratBtnIconWrap" aria-hidden="true"><svg class="sddStratBtnIcon" viewBox="0 0 24 24"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg></span>';
 }
 
 function msPickBtnHtml(id, label) {
@@ -304,20 +300,20 @@ function openMsSettingsDrawer() {
   msBindSettingsDrawer();
 }
 
-function msTagPillHtml(x, y, tagKey, id) {
+function msTagPillHtml(barRight, y, tagKey, id) {
   const s = MS_TAG_STYLES[tagKey];
-  return '\n  <div id="' + id + '" class="fig-box" data-fig-name="driver-tag" style="position:absolute;left:' + x.toFixed(2) + 'px;top:' + y.toFixed(2) + 'px;padding:4px 14px;background:' + s.bg + ';border-radius:11px;box-sizing:border-box;white-space:pre;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-style:normal;font-size:11.00px;line-height:13.86px;letter-spacing:0.00px;color:' + s.text + ';text-align:center;">' + s.label + '</div>';
+  return '\n  <div id="' + id + '" class="fig-box msDriverTag" data-fig-name="driver-tag" style="position:absolute;left:' + barRight.toFixed(2) + 'px;top:' + y.toFixed(2) + 'px;transform:translateX(-100%);padding:4px 14px;background:' + s.bg + ';border-radius:11px;box-sizing:border-box;white-space:pre;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-style:normal;font-size:11.00px;line-height:13.86px;letter-spacing:0.00px;color:' + s.text + ';text-align:center;">' + s.label + '</div>';
 }
 
 function msDriverHtml(d, i) {
   const colX = MS_COL_X[d.column];
   const rowY = MS_ROW_Y[d.row];
-  const tagX = MS_TAG_X[d.column][d.row];
   const tag = d.tagKey;
   const segTop = rowY + MS_LABEL_TO_SEGBAR_DY;
   const segLabelTop = rowY + MS_LABEL_TO_SEGLABELS_DY;
   const markerTop = rowY + MS_LABEL_TO_MARKER_DY;
   const barTotalWidth = d.segments.length * d.segmentWidth + (d.segments.length - 1) * MS_SEG_GAP;
+  const barRight = colX + barTotalWidth;
 
   const segmentsHtml = d.segments.map(function (seg, j) {
     const segX = colX + j * (d.segmentWidth + MS_SEG_GAP);
@@ -334,7 +330,7 @@ function msDriverHtml(d, i) {
 
   return '\n  <div class="fig-text" data-fig-name="driver-label" style="position:absolute;left:' + colX.toFixed(2) + 'px;top:' + rowY.toFixed(2) + 'px;width:240.00px;height:18.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:400;font-style:normal;font-size:14.00px;line-height:17.64px;letter-spacing:0.00px;color:#808582;text-align:left;white-space:pre;">' + d.label + '</div>' +
     '\n  <div id="msDriverValue' + i + '" class="fig-text" data-fig-name="driver-value" style="position:absolute;left:' + colX.toFixed(2) + 'px;top:' + (rowY + MS_LABEL_TO_VALUE_DY).toFixed(2) + 'px;width:240.00px;height:33.00px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:600;font-style:normal;font-size:26.00px;line-height:32.76px;letter-spacing:0.00px;color:#1c1f21;text-align:left;white-space:pre;">' + d.value + '</div>' +
-    msTagPillHtml(tagX, rowY + MS_LABEL_TO_TAG_DY, tag, 'msDriverTag' + i) + segmentsHtml + markerHtml;
+    msTagPillHtml(barRight, rowY + MS_LABEL_TO_TAG_DY, tag, 'msDriverTag' + i) + segmentsHtml + markerHtml;
 }
 
 function msRenderPricingPanel(P) {

@@ -835,9 +835,10 @@ body.popup-open .optionsMenu{opacity:0;pointer-events:none;transform:translateY(
 
 .msSettingsVintageHead{margin-top:22px}
 
-.sddStratBtn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:12px;margin:0;padding:8px 20px 8px 22px;border:1.5px solid #104130;border-radius:999px;background:#f5f5f5;color:#104130;font:inherit;font-weight:500;line-height:1.15;cursor:pointer;flex:none}
-.sddStratBtn:hover{background:#ececec}
-.sddStratBtnIcon{flex:none;width:52px;height:52px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sddStratBtn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:12px;margin:0;padding:0 8px 0 22px;height:48px;border:0;border-radius:999px;background:#104130;color:#fff;font:inherit;font-size:24px;font-weight:600;line-height:1;cursor:pointer;flex:none;box-shadow:0 6px 16px rgba(16,65,48,.22)}
+.sddStratBtn:hover{background:#0c3326}
+.sddStratBtnIconWrap{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:50%;background:#fff}
+.sddStratBtnIcon{display:block;width:20px;height:20px;stroke:#104130;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .msPickRow{display:flex;align-items:center;gap:12px}
 .sddStratList{margin:0}
 .sddStratPick{cursor:pointer}

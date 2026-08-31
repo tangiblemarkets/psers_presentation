@@ -264,12 +264,16 @@ function sddCurrentLabel() {
   return (sddStrategyByKey(sddState.strategyKey) || SDD_STRATEGIES[0]).label;
 }
 
+function sddPickIconHtml() {
+  return '<span class="sddStratBtnIconWrap" aria-hidden="true"><svg class="sddStratBtnIcon" viewBox="0 0 24 24"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg></span>';
+}
+
 function sddTitleBarHtml() {
   return '\n  <div id="sddTitleBar" data-fig-name="title" style="position:absolute;left:68px;top:136px;width:1700px;height:58px;display:flex;align-items:center;gap:12px;font-family:\'Plus Jakarta Sans\',sans-serif;font-weight:500;font-size:46px;color:#104130;white-space:nowrap;">' +
     '<span>Strategy Deep Dive:</span>' +
     '<button type="button" id="sddSettingsBtn" class="sddStratBtn" title="Choose strategy" aria-label="Choose strategy">' +
       '<span id="sddTitleStrategy">' + esc(sddCurrentLabel()) + '</span>' +
-      '<svg class="sddStratBtnIcon" viewBox="0 0 24 24" width="52" height="52" aria-hidden="true"><path d="M8 16L16 8"/><path d="M9 8h7v7"/></svg>' +
+      sddPickIconHtml() +
     '</button>' +
     '</div>';
 }

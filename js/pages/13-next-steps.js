@@ -58,8 +58,9 @@ function nsDotHtml(left, i){
 }
 
 function renderNextStepsSlide(){
+  const n = (CFG.rows || []).length;
   const steps = [
-    {left:68, num:'01', chipFill:true, chipW:95.2, chip:'COMPLETE', nameW:274, nameH:32, nameWrap:false, name:'Preliminary analysis', descLeft:25, descTop:188, descH:145, desc:'Portfolio-level review of composition, vintage profile, manager concentration and sellability across all 368 interests.'},
+    {left:68, num:'01', chipFill:true, chipW:95.2, chip:'COMPLETE', nameW:274, nameH:32, nameWrap:false, name:'Preliminary analysis', descLeft:25, descTop:188, descH:145, desc:'Portfolio-level review of composition, vintage profile, manager concentration and sellability across all ' + n + ' interests.'},
     {left:432, num:'02', chipFill:true, chipW:61.6, chip:'NEXT', nameW:300, nameH:32, nameWrap:false, name:'Discussion of objectives', descLeft:26, descTop:192, descH:116, desc:'Session with PSERS to identify liquidity goals, any DPI profile to be reached, and which GP relationships to retain.'},
     {left:796, num:'03', chipFill:false, chipW:137.2, chip:'DOCS REQUIRED', nameW:274, nameH:64, nameWrap:true, name:'Deep dive on selected assets', descLeft:26, descTop:188, descH:145, desc:'Asset-level analysis on the positions shortlisted for sale. Requires fund documentation from PSERS (CAS, QRs and LPAs).'},
     {left:1160, num:'04', chipFill:false, chipW:112, chip:'PRE-LAUNCH', nameW:274, nameH:64, nameWrap:true, name:'Validation with the market', descLeft:26, descTop:188, descH:116, desc:'Confidential sounding across our buyer universe to establish indicative pricing and confirm appetite before launch.'},
